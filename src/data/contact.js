@@ -3,20 +3,26 @@ export const contactInfo = {
     {
       name: "Manish Ranjan Minz",
       role: "Sports Secretary",
-      phone: "+91 98765 43210",
-      email: "director@daksha-fest.com",
+      phone: "+91 63712 82542",
+      email: "smirnoffgreenapple64@gmail.com",
     },
     {
       name: "Swagat Ranjan Choudhury",
-      role: "Sports Coordinator",
+      role: "Sports Cheif Coordinator",
       phone: "+91 98765 43211",
-      email: "events@daksha-fest.com",
+      email: "skcswagat2004@gmail.com",
+    },
+    {
+      name: "Pratik Lugun",
+      role: "Sports in-charge",
+      phone: "+91 96685 29338",
+      email: "pratik.lugun0087@gmail.com",
     },
   ],
   general: {
-    email: "info@daksha-fest.com",
-    phone: "+91 11-2345-6789",
-    address: "Main Sports Complex, Delhi University, Delhi 110001",
+    email: "dakshagcek@gmail.com",
+    phone: "+91 63712 82542",
+    address: "Government College Of Engineering, Kalahandi, Bhawanipatna, Odisha 766001",
   },
   social: [
     { name: "Instagram", icon: "📸", url: "#" },

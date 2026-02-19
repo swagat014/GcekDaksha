@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../supabaseClient';
-import { X, User, Phone, GraduationCap, FileText, Eye, Trash2, Check, XCircle } from 'lucide-react';
+import { X, User, Phone, GraduationCap, FileText, Eye, Trash2, Check, XCircle, Trophy, Users, Building2, Calendar, TrendingUp, Activity, Shield } from 'lucide-react';
 
 export default function AdminDashboard() {
   const [teams, setTeams] = useState([]);
@@ -252,29 +252,50 @@ export default function AdminDashboard() {
       {/* Header */}
       <div className="bg-gray-800/50 backdrop-blur-xl border-b border-gray-700/50">
         <div className="max-w-7xl mx-auto px-4 py-6">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl font-bold text-white">Admin Dashboard</h1>
-              <p className="text-gray-400 mt-1">Manage registered teams and participants</p>
-            </div>
+          <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4">
             <div className="flex items-center gap-4">
-              <span className="text-gray-300">Welcome, {user?.email}</span>
+              <motion.div 
+                className="w-12 h-12 bg-gradient-to-br from-purple-600 to-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-purple-500/25"
+                whileHover={{ scale: 1.05, rotate: 5 }}
+              >
+                <Shield className="w-6 h-6 text-white" />
+              </motion.div>
+              <div>
+                <h1 className="text-2xl lg:text-3xl font-black text-white bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">Admin Dashboard</h1>
+                <p className="text-gray-400 mt-1 flex items-center gap-2 text-sm lg:text-base">
+                  <Activity className="w-4 h-4" />
+                  Manage registered teams and participants
+                </p>
+              </div>
+            </div>
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 lg:gap-4">
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                onClick={handleRefresh}
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors mr-2"
+                onClick={() => navigate('/admin/accommodation')}
+                className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors text-sm lg:text-base"
               >
-                Refresh Data
+                Accommodation
               </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={handleLogout}
-                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
-              >
-                Logout
-              </motion.button>
+              <span className="text-gray-300 text-sm lg:text-base text-center px-2 py-1">Welcome, {user?.email}</span>
+              <div className="flex gap-2">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleRefresh}
+                  className="px-3 lg:px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors text-sm lg:text-base"
+                >
+                  Refresh
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleLogout}
+                  className="px-3 lg:px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors text-sm lg:text-base"
+                >
+                  Logout
+                </motion.button>
+              </div>
             </div>
           </div>
         </div>
@@ -282,50 +303,78 @@ export default function AdminDashboard() {
 
       {/* Stats */}
       <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-8">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-gray-800/50 backdrop-blur-xl rounded-xl p-6 border border-gray-700/50"
+            className="bg-gradient-to-br from-purple-600/20 to-blue-600/20 backdrop-blur-xl rounded-xl p-6 border border-purple-500/30 shadow-lg shadow-purple-500/10 hover:shadow-purple-500/20 transition-all duration-300"
           >
-            <h3 className="text-gray-400 text-sm uppercase tracking-wider">Total Teams</h3>
-            <p className="text-3xl font-bold text-white mt-2">{teams.length}</p>
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-gray-300 text-sm uppercase tracking-wider font-medium">Total Teams</h3>
+                <p className="text-4xl font-black text-white mt-2 bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">{teams.length}</p>
+              </div>
+              <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-blue-500 rounded-xl flex items-center justify-center shadow-lg">
+                <Trophy className="w-6 h-6 text-white" />
+              </div>
+            </div>
           </motion.div>
           
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="bg-gray-800/50 backdrop-blur-xl rounded-xl p-6 border border-gray-700/50"
+            className="bg-gradient-to-br from-green-600/20 to-emerald-600/20 backdrop-blur-xl rounded-xl p-4 lg:p-6 border border-green-500/30 shadow-lg shadow-green-500/10 hover:shadow-green-500/20 transition-all duration-300"
           >
-            <h3 className="text-gray-400 text-sm uppercase tracking-wider">Sports</h3>
-            <p className="text-3xl font-bold text-white mt-2">
-              {new Set(teams.map(t => t.sport)).size}
-            </p>
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-gray-300 text-xs lg:text-sm uppercase tracking-wider font-medium">Sports</h3>
+                <p className="text-2xl lg:text-4xl font-black text-white mt-2 bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
+                  {new Set(teams.map(t => t.sport)).size}
+                </p>
+              </div>
+              <div className="w-10 h-10 lg:w-12 lg:h-12 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl flex items-center justify-center shadow-lg">
+                <TrendingUp className="w-5 h-5 lg:w-6 lg:h-6 text-white" />
+              </div>
+            </div>
           </motion.div>
           
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="bg-gray-800/50 backdrop-blur-xl rounded-xl p-6 border border-gray-700/50"
+            className="bg-gradient-to-br from-orange-600/20 to-amber-600/20 backdrop-blur-xl rounded-xl p-4 lg:p-6 border border-orange-500/30 shadow-lg shadow-orange-500/10 hover:shadow-orange-500/20 transition-all duration-300"
           >
-            <h3 className="text-gray-400 text-sm uppercase tracking-wider">Colleges</h3>
-            <p className="text-3xl font-bold text-white mt-2">
-              {new Set(teams.map(t => t.college_name)).size}
-            </p>
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-gray-300 text-xs lg:text-sm uppercase tracking-wider font-medium">Colleges</h3>
+                <p className="text-2xl lg:text-4xl font-black text-white mt-2 bg-gradient-to-r from-orange-400 to-amber-400 bg-clip-text text-transparent">
+                  {new Set(teams.map(t => t.college_name)).size}
+                </p>
+              </div>
+              <div className="w-10 h-10 lg:w-12 lg:h-12 bg-gradient-to-br from-orange-500 to-amber-500 rounded-xl flex items-center justify-center shadow-lg">
+                <Building2 className="w-5 h-5 lg:w-6 lg:h-6 text-white" />
+              </div>
+            </div>
           </motion.div>
           
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className="bg-gray-800/50 backdrop-blur-xl rounded-xl p-6 border border-gray-700/50"
+            className="bg-gradient-to-br from-blue-600/20 to-cyan-600/20 backdrop-blur-xl rounded-xl p-4 lg:p-6 border border-blue-500/30 shadow-lg shadow-blue-500/10 hover:shadow-blue-500/20 transition-all duration-300"
           >
-            <h3 className="text-gray-400 text-sm uppercase tracking-wider">Players</h3>
-            <p className="text-3xl font-bold text-white mt-2">
-              {teams.reduce((total, team) => total + (team.players?.length || 0) + 1, 0)}
-            </p>
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-gray-300 text-xs lg:text-sm uppercase tracking-wider font-medium">Players</h3>
+                <p className="text-2xl lg:text-4xl font-black text-white mt-2 bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
+                  {teams.reduce((total, team) => total + (team.players?.length || 0) + 1, 0)}
+                </p>
+              </div>
+              <div className="w-10 h-10 lg:w-12 lg:h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center shadow-lg">
+                <Users className="w-5 h-5 lg:w-6 lg:h-6 text-white" />
+              </div>
+            </div>
           </motion.div>
         </div>
 
@@ -561,23 +610,7 @@ export default function AdminDashboard() {
 
               {/* Modal Content */}
               <div className="p-6 space-y-6">
-                {/* Debug Info - Remove in production */}
-                <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3 text-xs">
-                  <p className="text-yellow-400 font-semibold mb-2">Debug Info:</p>
-                  <p className="text-gray-400">captain_aadhaar_url: <span className={selectedTeam.captain_aadhaar_url ? 'text-green-400' : 'text-red-400'}>{selectedTeam.captain_aadhaar_url || 'NOT FOUND'}</span></p>
-                  <p className="text-gray-400">captain_college_id_url: <span className={selectedTeam.captain_college_id_url ? 'text-green-400' : 'text-red-400'}>{selectedTeam.captain_college_id_url || 'NOT FOUND'}</span></p>
-                  <p className="text-gray-400">payment_screenshot_url: <span className={selectedTeam.payment_screenshot_url ? 'text-green-400' : 'text-red-400'}>{selectedTeam.payment_screenshot_url || 'NOT FOUND'}</span></p>
-                  <p className="text-gray-400">Fetched payment URL: <span className={paymentScreenshotUrl ? 'text-green-400' : 'text-yellow-400'}>{paymentScreenshotUrl || 'Not fetched yet'}</span></p>
-                  <p className="text-gray-400">All keys: {Object.keys(selectedTeam).filter(k => k.includes('payment') || k.includes('screenshot')).join(', ') || 'none'}</p>
-                  <p className="text-gray-400">payment_status: <span className={selectedTeam.payment_status === 'Paid' ? 'text-green-400' : 'text-red-400'}>{selectedTeam.payment_status || 'NOT SET'}</span></p>
-                  <p className="text-gray-400">registration_status: <span className={selectedTeam.registration_status === 'Approved' ? 'text-green-400' : selectedTeam.registration_status === 'Rejected' ? 'text-red-400' : 'text-yellow-400'}>{selectedTeam.registration_status || 'NOT SET'}</span></p>
-                  <p className="text-gray-400">players_docs: <span className={selectedTeam.players_docs?.length ? 'text-green-400' : 'text-red-400'}>{selectedTeam.players_docs?.length ? `Found (${selectedTeam.players_docs.length} items)` : 'NOT FOUND'}</span></p>
-                  <p className="text-gray-400">players: <span className={selectedTeam.players?.length ? 'text-green-400' : 'text-red-400'}>{selectedTeam.players?.length ? `Found (${selectedTeam.players.length} players)` : 'NOT FOUND'}</span></p>
-                  {selectedTeam.players && selectedTeam.players.length > 0 && (
-                    <p className="text-gray-400 mt-2">Player names: {selectedTeam.players.map(p => p.name || 'Unnamed').join(', ')}</p>
-                  )}
-                </div>
-
+               
                 {/* Captain Details */}
                 <div className="bg-gradient-to-r from-purple-500/10 to-blue-500/10 rounded-xl p-5 border border-purple-500/20">
                   <h3 className="text-lg font-semibold text-purple-400 mb-4 flex items-center gap-2">

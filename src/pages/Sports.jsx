@@ -4,17 +4,17 @@ import { motion, AnimatePresence, useInView, useScroll, useTransform } from 'fra
 import { X, ZoomIn, Camera, Sparkles, ChevronLeft, ChevronRight, Heart, Share2, Download, Eye, Play } from 'lucide-react';
 
 const galleryData = [
-  {
-    id: 1,
-    sport: 'Football',
-    emoji: '⚽',
-    gradient: 'from-emerald-500 via-green-500 to-teal-600',
-    glow: 'rgba(16, 185, 129, 0.4)',
-    images: [
-      { id: 'f1', url: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=800&q=80', title: 'Championship Match', likes: 234 },
-      { id: 'f2', url: 'https://images.unsplash.com/photo-1553778263-73a83bab9b0c?w=800&q=80', title: 'Victory Celebration', likes: 189 },
-    ]
-  },
+  // {
+  //   id: 1,
+  //   sport: 'Football',
+  //   emoji: '⚽',
+  //   gradient: 'from-emerald-500 via-green-500 to-teal-600',
+  //   glow: 'rgba(16, 185, 129, 0.4)',
+  //   images: [
+  //     { id: 'f1', url: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=800&q=80', title: 'Championship Match', likes: 234 },
+  //     { id: 'f2', url: 'https://images.unsplash.com/photo-1553778263-73a83bab9b0c?w=800&q=80', title: 'Victory Celebration', likes: 189 },
+  //   ]
+  // },
   {
     id: 2,
     sport: 'Cricket',
@@ -39,13 +39,13 @@ const galleryData = [
   },
   {
     id: 4,
-    sport: 'Basketball',
-    emoji: '🏀',
+    sport: 'Kho-Kho',
+    emoji: '🏃',
     gradient: 'from-orange-500 via-red-500 to-rose-600',
     glow: 'rgba(239, 68, 68, 0.4)',
     images: [
-      { id: 'b1', url: 'https://images.unsplash.com/photo-1546519638-68e109498ffc?w=800&q=80', title: 'Slam Dunk', likes: 445 },
-      { id: 'b2', url: 'https://images.unsplash.com/photo-1559692048-79a3f837883d?w=800&q=80', title: 'Court Action', likes: 378 },
+      { id: 'b1', url: '/khokho.jpeg', title: 'Slam Dunk', likes: 445 },
+      { id: 'b2', url: '/khokho1.jpeg', title: 'Court Action', likes: 378 },
     ]
   },
   {
@@ -59,17 +59,17 @@ const galleryData = [
       { id: 'bd2', url: 'https://images.unsplash.com/photo-1599391398131-cd12dfc6c24e?w=800&q=80', title: 'Finals Match', likes: 145 },
     ]
   },
-  {
-    id: 6,
-    sport: 'Athletics',
-    emoji: '🏃',
-    gradient: 'from-violet-500 via-purple-500 to-fuchsia-600',
-    glow: 'rgba(139, 92, 246, 0.4)',
-    images: [
-      { id: 'a1', url: 'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=800&q=80', title: 'Sprint Finals', likes: 289 },
-      { id: 'a2', url: 'https://images.unsplash.com/photo-1571902943202-507ec2618e8f?w=800&q=80', title: 'Victory Lap', likes: 234 },
-    ]
-  },
+  // {
+  //   id: 6,
+  //   sport: 'Athletics',
+  //   emoji: '🏃',
+  //   gradient: 'from-violet-500 via-purple-500 to-fuchsia-600',
+  //   glow: 'rgba(139, 92, 246, 0.4)',
+  //   images: [
+  //     { id: 'a1', url: 'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=800&q=80', title: 'Sprint Finals', likes: 289 },
+  //     { id: 'a2', url: 'https://images.unsplash.com/photo-1571902943202-507ec2618e8f?w=800&q=80', title: 'Victory Lap', likes: 234 },
+  //   ]
+  // },
   {
     id: 7,
     sport: 'Chess',
@@ -83,13 +83,13 @@ const galleryData = [
   },
   {
     id: 8,
-    sport: 'Table Tennis',
-    emoji: '🏓',
+    sport: 'Kabaddi',
+    emoji: '🤼',
     gradient: 'from-pink-500 via-rose-500 to-red-600',
     glow: 'rgba(244, 63, 94, 0.4)',
     images: [
-      { id: 't1', url: 'https://images.unsplash.com/photo-1558743212-d9d729be083c?w=800&q=80', title: 'Rally Action', likes: 134 },
-      { id: 't2', url: 'https://images.unsplash.com/photo-1609710228159-0fa9bd7c0827?w=800&q=80', title: 'Championship Point', likes: 112 },
+      { id: 't1', url: '/kabbadi.webp', title: 'Rally Action', likes: 134 },
+      { id: 't2', url: '/kabbadi1.jpg', title: 'Championship Point', likes: 112 },
     ]
   },
 ];
