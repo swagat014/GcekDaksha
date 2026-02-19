@@ -22,8 +22,13 @@ export default function Home() {
 
     const handleMouseMove = (e) => {
       if (window.innerWidth >= 768) {
-        mouseX.set((e.clientX - window.innerWidth / 2) / 50);
-        mouseY.set((e.clientY - window.innerHeight / 2) / 50);
+        // Throttle mouse updates for better performance
+        const now = Date.now();
+        if (!handleMouseMove.lastUpdate || now - handleMouseMove.lastUpdate > 16) { // ~60fps
+          mouseX.set((e.clientX - window.innerWidth / 2) / 50);
+          mouseY.set((e.clientY - window.innerHeight / 2) / 50);
+          handleMouseMove.lastUpdate = now;
+        }
       }
     };
     window.addEventListener('mousemove', handleMouseMove);
@@ -78,7 +83,7 @@ export default function Home() {
     { id: 'missionvision', label: 'Mission & Vision', icon: Rocket },
   ];
 
-  const orbCount = isMobile ? 8 : 15;
+  const orbCount = isMobile ? 2 : 15; // Further reduced for low-tier mobiles
   const [orbs] = useState(() =>
     Array.from({ length: orbCount }).map((_, i) => ({
       id: i,
@@ -97,56 +102,69 @@ export default function Home() {
       {/* ═══ Background ═══ */}
       <div className="fixed inset-0 z-0">
         <motion.div style={isMobile ? {} : { x: mouseX, y: mouseY }}>
-          {orbs.map(orb => (
-            <motion.div
-              key={orb.id}
-              className="absolute rounded-full"
-              animate={{ opacity: [orb.opacity, orb.opacity * 1.5, orb.opacity] }}
-              transition={{ duration: orb.duration, repeat: Infinity, delay: orb.delay, ease: "easeInOut" }}
-              style={{
-                left: `${orb.x}%`,
-                top: `${orb.y}%`,
-                width: `${orb.size}px`,
-                height: `${orb.size}px`,
-                background: 'radial-gradient(circle, rgba(255,255,255,0.8) 0%, rgba(147,130,255,0.4) 100%)',
-              }}
-            />
-          ))}
+          {/* Desktop-only animated orbs - completely disabled on mobile */}
+          {!isMobile && (
+            <div className="block">
+              {orbs.map(orb => (
+                <motion.div
+                  key={orb.id}
+                  className="absolute rounded-full"
+                  animate={{ opacity: [orb.opacity, orb.opacity * 1.5, orb.opacity] }}
+                  transition={{ duration: orb.duration, repeat: Infinity, delay: orb.delay, ease: "easeInOut" }}
+                  style={{
+                    left: `${orb.x}%`,
+                    top: `${orb.y}%`,
+                    width: `${orb.size}px`,
+                    height: `${orb.size}px`,
+                    background: 'radial-gradient(circle, rgba(255,255,255,0.8) 0%, rgba(147,130,255,0.4) 100%)',
+                  }}
+                />
+              ))}
+            </div>
+          )}
 
-          <motion.div
-            className="absolute top-[-10%] left-[5%] sm:left-[10%] w-[250px] sm:w-[350px] md:w-[500px] h-[250px] sm:h-[350px] md:h-[500px] rounded-full blur-[80px] sm:blur-[100px] md:blur-[120px]"
-            animate={{
-              background: [
-                'radial-gradient(circle, rgba(59,130,246,0.12) 0%, transparent 70%)',
-                'radial-gradient(circle, rgba(139,92,246,0.12) 0%, transparent 70%)',
-                'radial-gradient(circle, rgba(59,130,246,0.12) 0%, transparent 70%)',
-              ],
-            }}
-            transition={{ duration: 20, repeat: Infinity, ease: 'easeInOut' }}
-          />
-          <motion.div
-            className="absolute bottom-[-10%] right-[5%] sm:right-[10%] w-[200px] sm:w-[300px] md:w-[400px] h-[200px] sm:h-[300px] md:h-[400px] rounded-full blur-[60px] sm:blur-[80px] md:blur-[100px]"
-            animate={{
-              background: [
-                'radial-gradient(circle, rgba(16,185,129,0.1) 0%, transparent 70%)',
-                'radial-gradient(circle, rgba(59,130,246,0.1) 0%, transparent 70%)',
-                'radial-gradient(circle, rgba(16,185,129,0.1) 0%, transparent 70%)',
-              ],
-            }}
-            transition={{ duration: 20, repeat: Infinity, ease: 'easeInOut', delay: 10 }}
-          />
-          <motion.div
-            className="absolute top-[40%] right-[10%] sm:right-[20%] w-[150px] sm:w-[220px] md:w-[300px] h-[150px] sm:h-[220px] md:h-[300px] rounded-full blur-[50px] sm:blur-[60px] md:blur-[80px] hidden sm:block"
-            animate={{
-              opacity: [0.3, 0.6, 0.3],
-              background: [
-                'radial-gradient(circle, rgba(251,146,60,0.1) 0%, transparent 70%)',
-                'radial-gradient(circle, rgba(251,146,60,0.15) 0%, transparent 70%)',
-                'radial-gradient(circle, rgba(251,146,60,0.1) 0%, transparent 70%)',
-              ],
-            }}
-            transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut', delay: 5 }}
-          />
+          {/* Ultra-simplified mobile background - no animations */}
+          {isMobile && (
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-900/5 via-purple-900/3 to-black/10" />
+          )}
+
+          {/* Desktop-only heavy gradient animations */}
+          <div className="hidden md:block">
+            <motion.div
+              className="absolute top-[-10%] left-[5%] sm:left-[10%] w-[250px] sm:w-[350px] md:w-[500px] h-[250px] sm:h-[350px] md:h-[500px] rounded-full blur-[80px] sm:blur-[100px] md:blur-[120px]"
+              animate={{
+                background: [
+                  'radial-gradient(circle, rgba(59,130,246,0.12) 0%, transparent 70%)',
+                  'radial-gradient(circle, rgba(139,92,246,0.12) 0%, transparent 70%)',
+                  'radial-gradient(circle, rgba(59,130,246,0.12) 0%, transparent 70%)',
+                ],
+              }}
+              transition={{ duration: 20, repeat: Infinity, ease: 'easeInOut' }}
+            />
+            <motion.div
+              className="absolute bottom-[-10%] right-[5%] sm:right-[10%] w-[200px] sm:w-[300px] md:w-[400px] h-[200px] sm:h-[300px] md:h-[400px] rounded-full blur-[60px] sm:blur-[80px] md:blur-[100px]"
+              animate={{
+                background: [
+                  'radial-gradient(circle, rgba(16,185,129,0.1) 0%, transparent 70%)',
+                  'radial-gradient(circle, rgba(59,130,246,0.1) 0%, transparent 70%)',
+                  'radial-gradient(circle, rgba(16,185,129,0.1) 0%, transparent 70%)',
+                ],
+              }}
+              transition={{ duration: 20, repeat: Infinity, ease: 'easeInOut', delay: 10 }}
+            />
+            <motion.div
+              className="absolute top-[40%] right-[10%] sm:right-[20%] w-[150px] sm:w-[220px] md:w-[300px] h-[150px] sm:h-[220px] md:h-[300px] rounded-full blur-[50px] sm:blur-[60px] md:blur-[80px]"
+              animate={{
+                opacity: [0.3, 0.6, 0.3],
+                background: [
+                  'radial-gradient(circle, rgba(251,146,60,0.1) 0%, transparent 70%)',
+                  'radial-gradient(circle, rgba(251,146,60,0.15) 0%, transparent 70%)',
+                  'radial-gradient(circle, rgba(251,146,60,0.1) 0%, transparent 70%)',
+                ],
+              }}
+              transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut', delay: 5 }}
+            />
+          </div>
         </motion.div>
 
         <div

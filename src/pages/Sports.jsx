@@ -119,7 +119,7 @@ function FloatingParticle({ delay, size, left, duration }) {
   );
 }
 
-function SportCard({ sport, index, onImageClick, allImages }) {
+function SportCard({ sport, index, onImageClick, allImages, isMobile }) {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: '-30px' });
   const isEven = index % 2 === 0;
@@ -186,6 +186,7 @@ function SportCard({ sport, index, onImageClick, allImages }) {
                   isInView={isInView}
                   delay={0.2 + imgIndex * 0.12}
                   onClick={() => onImageClick(globalIndex)}
+                  isMobile={isMobile}
                 />
               );
             })}
@@ -206,7 +207,7 @@ function SportCard({ sport, index, onImageClick, allImages }) {
   );
 }
 
-function ImageCard({ image, sport, imgIndex, isInView, delay, onClick }) {
+function ImageCard({ image, sport, imgIndex, isInView, delay, onClick, isMobile }) {
   const [isHovered, setIsHovered] = useState(false);
   const [isTouched, setIsTouched] = useState(false);
   const [liked, setLiked] = useState(false);
@@ -234,19 +235,21 @@ function ImageCard({ image, sport, imgIndex, isInView, delay, onClick }) {
       initial={{ opacity: 0, y: 30, scale: 0.96 }}
       animate={isInView ? { opacity: 1, y: 0, scale: 1 } : {}}
       transition={{ duration: 0.6, delay, ease: [0.22, 1, 0.36, 1] }}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+      onMouseEnter={() => !isMobile && setIsHovered(true)}
+      onMouseLeave={() => !isMobile && setIsHovered(false)}
       onTouchStart={() => setIsTouched(true)}
       onClick={onClick}
       className="group relative cursor-pointer active:scale-[0.98] transition-transform duration-200"
     >
-      {/* Outer Glow */}
-      <motion.div
-        animate={{ opacity: isActive ? 0.4 : 0, scale: isActive ? 1 : 0.95 }}
-        transition={{ duration: 0.3 }}
-        className="absolute -inset-2 sm:-inset-3 rounded-2xl sm:rounded-3xl blur-xl sm:blur-2xl -z-10"
-        style={{ background: sport.glow }}
-      />
+      {/* Outer Glow - disabled on mobile */}
+      {!isMobile && (
+        <motion.div
+          animate={{ opacity: isActive ? 0.4 : 0, scale: isActive ? 1 : 0.95 }}
+          transition={{ duration: 0.3 }}
+          className="absolute -inset-2 sm:-inset-3 rounded-2xl sm:rounded-3xl blur-xl sm:blur-2xl -z-10"
+          style={{ background: sport.glow }}
+        />
+      )}
 
       {/* Card */}
       <div className="relative overflow-hidden rounded-xl sm:rounded-2xl md:rounded-3xl bg-gradient-to-br from-white/[0.04] to-white/[0.01] border border-white/[0.06] hover:border-purple-500/30 active:border-purple-500/30 transition-all duration-500 backdrop-blur-sm">
@@ -322,25 +325,14 @@ function ImageCard({ image, sport, imgIndex, isInView, delay, onClick }) {
   );
 }
 
-export default function Gallery() {
+function Gallery() {
   const [selectedImageIndex, setSelectedImageIndex] = useState(null);
   const [touchStart, setTouchStart] = useState(null);
   const [isMobile, setIsMobile] = useState(false);
   const sectionRef = useRef(null);
-  const { scrollYProgress } = useScroll({
-    target: sectionRef,
-    offset: ['start end', 'end start']
-  });
+  const { scrollYProgress } = useScroll();
   const bgY = useTransform(scrollYProgress, [0, 1], ['0%', '30%']);
 
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 640);
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
-
-  // Prevent body scroll when lightbox is open
   useEffect(() => {
     if (selectedImageIndex !== null) {
       document.body.style.overflow = 'hidden';
@@ -400,7 +392,7 @@ export default function Gallery() {
     setTouchStart(null);
   };
 
-  const particleCount = isMobile ? 3 : 6;
+  const particleCount = isMobile ? 1 : 6; // Reduced to 1 for low-tier mobiles
 
   return (
     <section
@@ -413,31 +405,40 @@ export default function Gallery() {
     >
       {/* Animated Background */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        {/* Large Orbs */}
-        <motion.div
-          style={isMobile ? {} : { y: bgY }}
-          className="absolute -top-16 sm:-top-32 -left-16 sm:-left-32 w-[280px] sm:w-[400px] md:w-[500px] lg:w-[700px] h-[280px] sm:h-[400px] md:h-[500px] lg:h-[700px] rounded-full"
-          animate={{
-            background: [
-              'radial-gradient(circle, rgba(88, 28, 135, 0.15), transparent 70%)',
-              'radial-gradient(circle, rgba(126, 34, 206, 0.2), transparent 70%)',
-              'radial-gradient(circle, rgba(88, 28, 135, 0.15), transparent 70%)',
-            ],
-          }}
-          transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
-        />
-        <motion.div
-          className="absolute -bottom-16 sm:-bottom-32 -right-16 sm:-right-32 w-[220px] sm:w-[350px] md:w-[450px] lg:w-[600px] h-[220px] sm:h-[350px] md:h-[450px] lg:h-[600px] rounded-full"
-          animate={{
-            background: [
-              'radial-gradient(circle, rgba(59, 7, 100, 0.15), transparent 70%)',
-              'radial-gradient(circle, rgba(91, 33, 182, 0.2), transparent 70%)',
-              'radial-gradient(circle, rgba(59, 7, 100, 0.15), transparent 70%)',
-            ],
-          }}
-          transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut', delay: 2 }}
-        />
-        <div className="absolute top-1/3 right-1/4 w-[150px] sm:w-[250px] md:w-[350px] lg:w-[500px] h-[150px] sm:h-[250px] md:h-[350px] lg:h-[500px] bg-gradient-to-br from-indigo-900/10 via-purple-800/5 to-transparent rounded-full blur-[60px] sm:blur-[80px] md:blur-[100px] hidden sm:block" />
+        {/* Desktop-only Large Orbs - disabled on mobile */}
+        {!isMobile && (
+          <>
+            <motion.div
+              style={{ y: bgY }}
+              className="absolute -top-16 sm:-top-32 -left-16 sm:-left-32 w-[280px] sm:w-[400px] md:w-[500px] lg:w-[700px] h-[280px] sm:h-[400px] md:h-[500px] lg:h-[700px] rounded-full"
+              animate={{
+                background: [
+                  'radial-gradient(circle, rgba(88, 28, 135, 0.15), transparent 70%)',
+                  'radial-gradient(circle, rgba(126, 34, 206, 0.2), transparent 70%)',
+                  'radial-gradient(circle, rgba(88, 28, 135, 0.15), transparent 70%)',
+                ],
+              }}
+              transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
+            />
+            <motion.div
+              className="absolute -bottom-16 sm:-bottom-32 -right-16 sm:-right-32 w-[220px] sm:w-[350px] md:w-[450px] lg:w-[600px] h-[220px] sm:h-[350px] md:h-[450px] lg:h-[600px] rounded-full"
+              animate={{
+                background: [
+                  'radial-gradient(circle, rgba(59, 7, 100, 0.15), transparent 70%)',
+                  'radial-gradient(circle, rgba(91, 33, 182, 0.2), transparent 70%)',
+                  'radial-gradient(circle, rgba(59, 7, 100, 0.15), transparent 70%)',
+                ],
+              }}
+              transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut', delay: 2 }}
+            />
+            <div className="absolute top-1/3 right-1/4 w-[150px] sm:w-[250px] md:w-[350px] lg:w-[500px] h-[150px] sm:h-[250px] md:h-[350px] lg:h-[500px] bg-gradient-to-br from-indigo-900/10 via-purple-800/5 to-transparent rounded-full blur-[60px] sm:blur-[80px] md:blur-[100px]" />
+          </>
+        )}
+
+        {/* Simplified mobile background - no animations */}
+        {isMobile && (
+          <div className="absolute inset-0 bg-gradient-to-br from-purple-900/5 via-black/10 to-transparent" />
+        )}
 
         {/* Floating Particles */}
         {[...Array(particleCount)].map((_, i) => (
@@ -557,6 +558,7 @@ export default function Gallery() {
               index={index}
               onImageClick={openLightbox}
               allImages={allImages}
+              isMobile={isMobile}
             />
           ))}
         </div>
@@ -753,3 +755,5 @@ export default function Gallery() {
     </section>
   );
 }
+
+export default Gallery;

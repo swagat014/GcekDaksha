@@ -26,10 +26,28 @@ export default function Register() {
   const [paymentCompleted, setPaymentCompleted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState({});
+  const [isMobile, setIsMobile] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [toast, setToast] = useState({ show: false, message: '', type: '' });
   const [lastSubmission, setLastSubmission] = useState(null);
   const [step, setStep] = useState(1);
+
+  // Performance monitoring for low-tier mobiles
+  useEffect(() => {
+    const checkMobile = () => {
+      const isMobileDevice = window.innerWidth < 768;
+      setIsMobile(isMobileDevice);
+      
+      // Reduce animation quality for low-end devices
+      if (isMobileDevice && navigator.hardwareConcurrency <= 2) {
+        document.documentElement.style.setProperty('--animation-quality', 'low');
+      }
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const sportQRMapping = {
     // 'Football': '/4000.jpeg',
@@ -265,30 +283,35 @@ export default function Register() {
       {/* Background */}
       <div className="fixed inset-0 bg-black">
         <div className="absolute inset-0 bg-gradient-to-br from-purple-950/50 via-black to-violet-950/30" />
-        <motion.div
-          className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] rounded-full"
-          style={{
-            background: 'radial-gradient(circle, rgba(147,51,234,0.15) 0%, transparent 70%)',
-          }}
-          animate={{ scale: [1, 1.2, 1], x: [0, 30, 0] }}
-          transition={{ duration: 15, repeat: Infinity, ease: 'easeInOut' }}
-        />
-        <motion.div
-          className="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] rounded-full"
-          style={{
-            background: 'radial-gradient(circle, rgba(139,92,246,0.12) 0%, transparent 70%)',
-          }}
-          animate={{ scale: [1.2, 1, 1.2], y: [0, -40, 0] }}
-          transition={{ duration: 20, repeat: Infinity, ease: 'easeInOut' }}
-        />
-        <motion.div
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] rounded-full"
-          style={{
-            background: 'radial-gradient(circle, rgba(168,85,247,0.08) 0%, transparent 70%)',
-          }}
-          animate={{ scale: [1, 1.3, 1], opacity: [0.5, 1, 0.5] }}
-          transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut' }}
-        />
+        {/* Desktop-only heavy animations */}
+        <div className="hidden md:block">
+          <motion.div
+            className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] rounded-full"
+            style={{
+              background: 'radial-gradient(circle, rgba(147,51,234,0.15) 0%, transparent 70%)',
+            }}
+            animate={{ scale: [1, 1.2, 1], x: [0, 30, 0] }}
+            transition={{ duration: 15, repeat: Infinity, ease: 'easeInOut' }}
+          />
+          <motion.div
+            className="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] rounded-full"
+            style={{
+              background: 'radial-gradient(circle, rgba(139,92,246,0.12) 0%, transparent 70%)',
+            }}
+            animate={{ scale: [1.2, 1, 1.2], y: [0, -40, 0] }}
+            transition={{ duration: 20, repeat: Infinity, ease: 'easeInOut' }}
+          />
+          <motion.div
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] rounded-full"
+            style={{
+              background: 'radial-gradient(circle, rgba(168,85,247,0.08) 0%, transparent 70%)',
+            }}
+            animate={{ scale: [1, 1.3, 1], opacity: [0.5, 1, 0.5] }}
+            transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut' }}
+          />
+        </div>
+        {/* Simplified mobile background */}
+        <div className="md:hidden absolute inset-0 bg-gradient-to-br from-purple-900/20 via-transparent to-violet-900/10" />
         <div
           className="absolute inset-0 opacity-[0.03]"
           style={{
