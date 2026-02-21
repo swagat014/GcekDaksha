@@ -269,6 +269,7 @@ export default function AdminDashboard() {
               </div>
             </div>
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 lg:gap-4">
+              <span className="text-gray-300 text-sm lg:text-base text-center px-2 py-1">Welcome, {user?.email}</span>
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
@@ -277,7 +278,6 @@ export default function AdminDashboard() {
               >
                 Accommodation
               </motion.button>
-              <span className="text-gray-300 text-sm lg:text-base text-center px-2 py-1">Welcome, {user?.email}</span>
               <div className="flex gap-2">
                 <motion.button
                   whileHover={{ scale: 1.05 }}

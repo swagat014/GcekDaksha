@@ -122,7 +122,7 @@ const AdminAccommodation = () => {
               </div>
             </div>
             <div className="flex items-center gap-4">
-              <motion.button
+              {/* <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => {
@@ -132,7 +132,7 @@ const AdminAccommodation = () => {
                 className="px-3 py-2 bg-orange-600 hover:bg-orange-700 text-white text-sm rounded-lg transition-colors"
               >
                 Debug Refresh
-              </motion.button>
+              </motion.button> */}
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
@@ -235,7 +235,7 @@ const AdminAccommodation = () => {
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-300">
                         <div className="flex items-center gap-2">
-                          <DollarSign className="w-4 h-4 text-green-400" />
+                          {/* <DollarSign className="w-4 h-4 text-green-400" /> */}
                           <span className="text-green-400 font-semibold">₹{row.total_amount}</span>
                         </div>
                       </td>

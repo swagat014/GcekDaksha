@@ -301,16 +301,16 @@ function ImageCard({ image, sport, imgIndex, isInView, delay, onClick, isMobile 
           />
 
           {/* Zoom Icon on Hover/Touch */}
-          <motion.div
+          {/* <motion.div
             animate={{ opacity: isActive ? 1 : 0, scale: isActive ? 1 : 0.8 }}
             transition={{ duration: 0.25 }}
             className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 p-2.5 sm:p-3 md:p-4 rounded-full bg-black/30 backdrop-blur-md border border-white/20"
           >
             <ZoomIn className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-white" />
-          </motion.div>
+          </motion.div> */}
 
           {/* Bottom Info Bar */}
-          <div className="absolute bottom-0 left-0 right-0 px-2.5 sm:px-3 md:px-4 py-2 sm:py-2.5 md:py-3 bg-gradient-to-t from-black/80 to-transparent">
+          {/* <div className="absolute bottom-0 left-0 right-0 px-2.5 sm:px-3 md:px-4 py-2 sm:py-2.5 md:py-3 bg-gradient-to-t from-black/80 to-transparent">
             <div className="flex items-center justify-between">
               <p className="text-white/90 text-xs sm:text-sm font-semibold truncate mr-2">{image.title}</p>
               <div className="flex items-center gap-1 sm:gap-1.5 flex-shrink-0">
@@ -318,7 +318,7 @@ function ImageCard({ image, sport, imgIndex, isInView, delay, onClick, isMobile 
                 <span className="text-[10px] sm:text-xs text-white/50">{likeCount}</span>
               </div>
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
     </motion.div>

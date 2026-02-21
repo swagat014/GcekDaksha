@@ -5,7 +5,7 @@ import { supabase } from "../supabaseClient";
 import PlayerCheckbox from "../components/PlayerCheckbox";
 import { sports } from '../data/sports';
 
-const PRICE = 500;
+const PRICE = 550;
 
 const AccommodationForm = () => {
   const [form, setForm] = useState({
@@ -24,27 +24,36 @@ const AccommodationForm = () => {
   const [toast, setToast] = useState({ show: false, message: '', type: '' });
 
   const fetchPlayers = async () => {
-    if (!form.teamName.trim() || !form.collegeName.trim() || !form.sport.trim()) {
-      setToast({ show: true, message: 'Please fill all team details first', type: 'error' });
+    if (!form.teamName.trim() || !form.collegeName.trim() || !form.sport.trim() || !form.captainName.trim() || !form.captainMobile.trim()) {
+      setToast({ show: true, message: 'Please fill all team details including captain name and mobile number', type: 'error' });
+      setTimeout(() => setToast({ show: false, message: '', type: '' }), 3000);
+      return;
+    }
+
+    // Validate mobile number format
+    if (!/^[0-9]{10}$/.test(form.captainMobile.trim())) {
+      setToast({ show: true, message: 'Captain mobile number must be exactly 10 digits', type: 'error' });
       setTimeout(() => setToast({ show: false, message: '', type: '' }), 3000);
       return;
     }
 
     try {
-      // First, try exact match
+      // First, try exact match with captain details
       let { data, error } = await supabase
         .from("registrations")
-        .select("captain_name, players, team_name, college_name, sport")
+        .select("captain_name, captain_mobile, players, team_name, college_name, sport")
         .eq("team_name", form.teamName.trim())
         .eq("college_name", form.collegeName.trim())
         .eq("sport", form.sport.trim())
+        .eq("captain_name", form.captainName.trim())
+        .eq("captain_mobile", form.captainMobile.trim())
         .single();
 
-      // If exact match fails, try case-insensitive match
+      // If exact match fails, try case-insensitive match for captain name with exact mobile match
       if (error || !data) {
         const { data: allTeams, error: fetchError } = await supabase
           .from("registrations")
-          .select("captain_name, players, team_name, college_name, sport");
+          .select("captain_name, captain_mobile, players, team_name, college_name, sport");
 
         if (fetchError) {
           console.error('Supabase error:', fetchError);
@@ -53,15 +62,17 @@ const AccommodationForm = () => {
           return;
         }
 
-        // Find matching team using case-insensitive comparison
+        // Find matching team using case-insensitive comparison for name and exact match for mobile
         data = allTeams?.find(team => 
           team.team_name.toLowerCase() === form.teamName.trim().toLowerCase() &&
           team.college_name.toLowerCase() === form.collegeName.trim().toLowerCase() &&
-          team.sport.toLowerCase() === form.sport.trim().toLowerCase()
+          team.sport.toLowerCase() === form.sport.trim().toLowerCase() &&
+          team.captain_name.toLowerCase() === form.captainName.trim().toLowerCase() &&
+          team.captain_mobile === form.captainMobile.trim()
         );
 
         if (!data) {
-          setToast({ show: true, message: 'No team found with these details (case-insensitive search performed)', type: 'error' });
+          setToast({ show: true, message: 'No team found with these details. Captain name  and mobile number must match exactly', type: 'error' });
           setTimeout(() => setToast({ show: false, message: '', type: '' }), 3000);
           return;
         }

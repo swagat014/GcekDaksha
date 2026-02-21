@@ -8,13 +8,13 @@ export const contactInfo = {
     },
     {
       name: "Swagat Ranjan Choudhury",
-      role: "Sports Cheif Coordinator",
+      role: "Chief Sports Coordinator",
       phone: "+91 98765 43211",
       email: "skcswagat2004@gmail.com",
     },
     {
       name: "Pratik Lugun",
-      role: "Sports in-charge",
+      role: "Chief Game in-charge",
       phone: "+91 96685 29338",
       email: "pratik.lugun0087@gmail.com",
     },

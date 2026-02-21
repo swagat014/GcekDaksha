@@ -253,7 +253,7 @@ export default function Home() {
                   />
                 </div>
                 <h2 className="text-sm sm:text-lg md:text-2xl lg:text-3xl font-bold text-white/80 tracking-wide px-2">
-                  Government College of Engineering Kalahandi
+                  Government College of Engineering Kalahandi, Bhawanipatna
                 </h2>
               </motion.div>
             </motion.div>
