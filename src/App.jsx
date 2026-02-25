@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { AnimatePresence, lazy, Suspense } from "framer-motion";
+import { AnimatePresence } from "framer-motion";
+import { lazy, Suspense } from "react";
 
 /* Common Components */
 import Navbar from "./components/Navbar";
