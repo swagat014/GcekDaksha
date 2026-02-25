@@ -2,16 +2,15 @@
 # Optimized for performance, security, and SEO
 
 [build]
-# Build command
-command = "npm run build"
-# Build output directory
-publish = "dist"
-# Node version
-node_version = "20"
+  command = "npm run build"
+  publish = "dist"
+  node_version = "20"
+  functions = "functions"
+  ignore = "git diff --quiet HEAD^ HEAD -- ."
 
 # Environment variables
 [build.environment]
-NODE_OPTIONS = "--max-old-space-size=4096"
+  NODE_OPTIONS = "--max-old-space-size=4096"
 
 # Headers for performance optimization
 [[headers]]
@@ -22,6 +21,7 @@ for = "/*"
   X-XSS-Protection = "1; mode=block"
   Referrer-Policy = "strict-origin-when-cross-origin"
   Permissions-Policy = "camera=(), microphone=(), geolocation=()"
+  Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
 
 # Cache control for static assets
 [[headers]]
@@ -38,57 +38,39 @@ for = "/css/*"
 for = "/images/*"
 [headers.values]
   Cache-Control = "public, max-age=31536000, immutable"
-  
+
 [[headers]]
 for = "/fonts/*"
 [headers.values]
   Cache-Control = "public, max-age=31536000, immutable"
 
-# Cache control for HTML (no caching for dynamic content)
+# HTML caching
 [[headers]]
 for = "/*.html"
 [headers.values]
-  Cache-Control = "public, max-age=3600, must-revalidate, s-maxage=3600"
+  Cache-Control = "public, max-age=3600, must-revalidate"
 
-# Cache control for root index
 [[headers]]
 for = "/index.html"
 [headers.values]
   Cache-Control = "public, max-age=3600, must-revalidate"
 
-# Security headers for all pages
-[[headers]]
-for = "/*"
-[headers.values]
-  Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
-  
-# Enable compression for specific file types
-[[headers]]
-for = "/**"
-[headers.values]
-  Content-Encoding = "gzip"
-
-# Redirects for old URLs (if any migration needed)
+# Redirect API to functions
 [[redirects]]
 from = "/api/*"
 to = "/.netlify/functions/:splat"
 status = 200
 
-# Redirect all non-matching routes to index for SPA
+# SPA redirect
 [[redirects]]
 from = "/*"
 to = "/index.html"
 status = 200
 
-# Optimized Netlify functions
+# Functions settings
 [functions]
-node_bundler = "esbuild"
+  node_bundler = "esbuild"
 
-# Analytics and monitoring (optional)
+# Analytics
 [analytics]
-enabled = true
-
-# Build settings
-[build]
-functions = "functions"
-ignore = "git diff --quiet HEAD^ HEAD -- ."
+  enabled = true
