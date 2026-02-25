@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { AnimatePresence } from "framer-motion";
+import { AnimatePresence, lazy, Suspense } from "framer-motion";
 
 /* Common Components */
 import Navbar from "./components/Navbar";
@@ -7,16 +7,23 @@ import DakshaHero from "./components/DakshaHero";
 import Contact from "./components/Contact";
 import Footer from "./components/Footer";
 
-/* Public Pages */
-import Home from "./pages/Home";
-import Register from "./pages/Register";
-import Sports from "./pages/Sports";
-import AccommodationForm from "./pages/AccommodationForm";
+/* Lazy Loaded Pages - Better Performance */
+const Home = lazy(() => import("./pages/Home"));
+const Register = lazy(() => import("./pages/Register"));
+const Sports = lazy(() => import("./pages/Sports"));
+const AccommodationForm = lazy(() => import("./pages/AccommodationForm"));
 
-/* Admin Pages */
-import AdminLogin from "./pages/AdminLogin";
-import AdminDashboard from "./pages/AdminDashboard";
-import AdminAccommodation from "./pages/AdminAccommodation";
+/* Admin Pages - Also Lazy */
+const AdminLogin = lazy(() => import("./pages/AdminLogin"));
+const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
+const AdminAccommodation = lazy(() => import("./pages/AdminAccommodation"));
+
+/* Loading Component */
+const PageLoader = () => (
+  <div className="flex items-center justify-center min-h-[50vh]">
+    <div className="w-8 h-8 border-2 border-purple-500/30 border-t-purple-500 rounded-full animate-spin" />
+  </div>
+);
 
 function App() {
   return (
@@ -39,15 +46,23 @@ function App() {
                   <DakshaHero />
 
                   <main className="w-full">
-                    <Home />
-                    <Sports />
+                    <Suspense fallback={<PageLoader />}>
+                      <Home />
+                    </Suspense>
+                    <Suspense fallback={<PageLoader />}>
+                      <Sports />
+                    </Suspense>
 
                     <div id="register" className="w-full">
-                      <Register />
+                      <Suspense fallback={<PageLoader />}>
+                        <Register />
+                      </Suspense>
                     </div>
 
                     <div id="accommodation" className="w-full">
-                      <AccommodationForm />
+                      <Suspense fallback={<PageLoader />}>
+                        <AccommodationForm />
+                      </Suspense>
                     </div>
 
                     <Contact />
@@ -60,16 +75,41 @@ function App() {
 
             
             {/* ================= ADMIN AUTH ================= */}
-            <Route path="/admin" element={<AdminLogin />} />
-            <Route path="/admin/login" element={<AdminLogin />} />
+            <Route 
+              path="/admin" 
+              element={
+                <Suspense fallback={<PageLoader />}>
+                  <AdminLogin />
+                </Suspense>
+              } 
+            />
+            <Route 
+              path="/admin/login" 
+              element={
+                <Suspense fallback={<PageLoader />}>
+                  <AdminLogin />
+                </Suspense>
+              } 
+            />
 
             {/* ================= ADMIN DASHBOARD ================= */}
-            <Route path="/admin/dashboard" element={<AdminDashboard />} />
+            <Route 
+              path="/admin/dashboard" 
+              element={
+                <Suspense fallback={<PageLoader />}>
+                  <AdminDashboard />
+                </Suspense>
+              } 
+            />
 
             {/* ================= ADMIN ACCOMMODATION ================= */}
             <Route
               path="/admin/accommodation"
-              element={<AdminAccommodation />}
+              element={
+                <Suspense fallback={<PageLoader />}>
+                  <AdminAccommodation />
+                </Suspense>
+              } 
             />
           </Routes>
         </AnimatePresence>

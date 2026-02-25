@@ -20,7 +20,7 @@ export default defineConfig({
       output: {
         manualChunks: {
           vendor: ["react", "react-dom", "react-router-dom"],
-          animations: ["framer-motion", "gsap"],
+          animations: ["framer-motion"],
           ui: ["lucide-react"],
           supabase: ["@supabase/supabase-js"],
         },
@@ -46,11 +46,11 @@ export default defineConfig({
       },
     },
 
-    chunkSizeWarningLimit: 600,
+    chunkSizeWarningLimit: 400, // Reduced from 600
     cssCodeSplit: true,
     sourcemap: false,
     reportCompressedSize: true,
-    assetsInlineLimit: 4096,
+    assetsInlineLimit: 2048, // Reduced from 4096
   },
 
   optimizeDeps: {
