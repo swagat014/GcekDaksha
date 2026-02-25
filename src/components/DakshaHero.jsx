@@ -153,11 +153,11 @@ const CalendarDateDisplay = () => {
   const [cycleKey, setCycleKey] = useState(0);
 
   const dateItems = [
-    { value: '7th', type: 'date' },
+    { value: '14th', type: 'date' },
     { value: 'March', type: 'date' },
     { value: '2026', type: 'date' },
     { value: '-', type: 'separator' },
-    { value: '9th', type: 'date' },
+    { value: '16th', type: 'date' },
     { value: 'March', type: 'date' },
     { value: '2026', type: 'date' },
   ];

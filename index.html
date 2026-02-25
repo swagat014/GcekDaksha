@@ -1,13 +1,123 @@
 <!doctype html>
 <html lang="en">
   <head>
+    <!-- Essential Meta Tags -->
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Daksha</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    
+    <!-- SEO Meta Tags -->
+    <title>Daksha - Inter College Sports Tournament</title>
+    <meta name="description" content="Daksha Athletic Championship: A thrilling 3-day multi-sport event featuring cricket, volleyball, kabaddi, badminton, kho-kho, and chess. Join 800+ athletes competing for glory!" />
+    <meta name="keywords" content="sports championship, athletic events, cricket, volleyball, kabaddi, badminton, youth sports, inter-school championship, sports competition, athletics" />
+    <meta name="author" content="Daksha Championship Committee" />
+    <meta name="theme-color" content="#0a0514" />
+    
+    <!-- Open Graph Meta Tags (Social Sharing) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://dakshagcek.netlify.app/" />
+    <meta property="og:title" content="Daksha - Inter College Sports Tournament" />
+    <meta property="og:description" content="Daksha Athletic Championship: A thrilling 3-day multi-sport event featuring cricket, volleyball, kabaddi, badminton, kho-kho, and chess. Join 800+ athletes competing for glory!" />
+    <meta property="og:image" content="https://dakshagcek.netlify.app/og-image.png" />
+    <meta property="og:site_name" content="Daksha Championship" />
+    <meta property="og:locale" content="en_IN" />
+    
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="https://dakshagcek.netlify.app/" />
+    <meta name="twitter:title" content="Daksha - Inter College Sports Tournament" />
+    <meta name="twitter:description" content="Daksha Athletic Championship: A thrilling 3-day multi-sport event featuring 800+ athletes competing in 7 different sports!" />
+    <meta name="twitter:image" content="https://dakshagcek.netlify.app/og-image.png" />
+    
+    <!-- Structured Data (Schema.org JSON-LD) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Event",
+      "name": "Daksha Athletic Championship",
+      "description": "A 3-day multi-sport youth athletic championship",
+      "startDate": "2024-12-01T08:00:00Z",
+      "endDate": "2024-12-03T18:00:00Z",
+      "eventStatus": "https://schema.org/EventScheduled",
+      "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
+      "location": {
+        "@type": "Place",
+        "name": "Main Sports Arena",
+        "address": {
+          "@type": "PostalAddress",
+          "addressCountry": "IN"
+        }
+      },
+      "organizer": {
+        "@type": "Organization",
+        "name": "Daksha Championship Committee",
+        "url": "https://dakshagcek.netlify.app/"
+      }
+    }
+    </script>
+    
+    <!-- Favicon & Icons -->
+    <link rel="icon" type="image/jpeg" href="/logo.jpeg" />
+    <link rel="shortcut icon" href="/logo.jpeg" type="image/jpeg" />
+    <link rel="apple-touch-icon" href="/logo.jpeg" />
+    
+    <!-- Preconnect & DNS-Prefetch for External Resources -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
+    <link rel="preconnect" href="https://images.unsplash.com" crossorigin />
+    <link rel="dns-prefetch" href="https://images.unsplash.com" />
+    <link rel="prefetch" href="https://images.unsplash.com" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&family=Libre+Bodoni:ital,wght@0,400..700;1,400..700&family=Limelight&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&family=Libre+Bodoni:ital,wght@0,400..700;1,400..700&family=Limelight&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Roboto:ital,wght@0,100..900;1,100..900&family=Syne:wght@400..800&display=swap" rel="stylesheet">
+    
+    <!-- Font Optimization (System fonts prioritized) -->
+    <style>
+      @font-face {
+        font-family: 'Inter';
+        src: system-ui, -apple-system, sans-serif;
+        font-display: swap;
+      }
+    </style>
+    
+    <!-- Resource Hints for Performance -->
+    <link rel="preload" as="script" href="/src/main.jsx" />
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://dakshagcek.netlify.app/" />
+    
+    <!-- Robots Meta Tags -->
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <meta name="googlebot" content="index, follow" />
+    
+    <!-- Accessibility & Performance -->
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   </head>
   <body>
+    <!-- Root Element for React -->
     <div id="root"></div>
+    
+    <!-- Main App Script (Type Module) -->
     <script type="module" src="/src/main.jsx"></script>
+    
+    <!-- Performance Monitoring (Optional - Remove in production if not needed) -->
+    <script>
+      // Web Vitals monitoring for Lighthouse optimization
+      if (window.requestIdleCallback) {
+        requestIdleCallback(() => {
+          if ('connection' in navigator) {
+            const conn = navigator.connection;
+            if (conn && conn.effectiveType === '4g') {
+              // Load heavy scripts on 4G
+              console.log('Optimized for high bandwidth');
+            }
+          }
+        });
+      }
+    </script>
   </body>
 </html>

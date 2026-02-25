@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+  
+  <!-- Homepage -->
+  <url>
+    <loc>https://dakshagcek.netlify.app/</loc>
+    <lastmod>2024-02-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+  
+  <!-- Sports Section -->
+  <url>
+    <loc>https://dakshagcek.netlify.app/#sports</loc>
+    <lastmod>2024-02-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  
+  <!-- Registration Section -->
+  <url>
+    <loc>https://dakshagcek.netlify.app/#register</loc>
+    <lastmod>2024-02-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  
+  <!-- Accommodation Section -->
+  <url>
+    <loc>https://dakshagcek.netlify.app/#accommodation</loc>
+    <lastmod>2024-02-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  
+  <!-- Contact Section -->
+  <url>
+    <loc>https://dakshagcek.netlify.app/#contact</loc>
+    <lastmod>2024-02-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+</urlset>
