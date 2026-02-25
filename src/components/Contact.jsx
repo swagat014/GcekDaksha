@@ -1,7 +1,24 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion, useInView, AnimatePresence } from 'framer-motion';
 import { Mail, Phone, MapPin, Instagram, Facebook, Twitter, Linkedin, Sparkles, Users, ArrowUpRight, Zap, Heart, ExternalLink, Copy, Check, Crown, Send, Star, Shield } from 'lucide-react';
 import { contactInfo } from '../data/contact';
+
+// Mobile detection hook
+const useIsMobile = () => {
+  const [isMobile, setIsMobile] = useState(false);
+  
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+  
+  return isMobile;
+};
 
 export default function Contact() {
   const [activeCard, setActiveCard] = useState(null);
@@ -9,6 +26,7 @@ export default function Contact() {
   const [hoveredCoordinator, setHoveredCoordinator] = useState(null);
   const sectionRef = useRef(null);
   const isInView = useInView(sectionRef, { once: true, amount: 0.1 });
+  const isMobile = useIsMobile();
 
   const copyToClipboard = (text, id) => {
     navigator.clipboard.writeText(text);
@@ -57,38 +75,47 @@ export default function Contact() {
 
       {/* Background Effects */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        {/* Large ambient orbs */}
-        <motion.div className="absolute top-[-5%] right-[5%] w-[700px] h-[700px] rounded-full blur-[200px]"
-          animate={{
-            background: [
-              'radial-gradient(circle, rgba(139,92,246,0.08) 0%, transparent 70%)',
-              'radial-gradient(circle, rgba(168,85,247,0.12) 0%, transparent 70%)',
-              'radial-gradient(circle, rgba(109,40,217,0.08) 0%, transparent 70%)',
-              'radial-gradient(circle, rgba(139,92,246,0.08) 0%, transparent 70%)',
-            ],
-          }}
-          transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut' }}
-        />
-        <motion.div className="absolute bottom-[-10%] left-[0%] w-[600px] h-[600px] rounded-full blur-[180px]"
-          animate={{
-            background: [
-              'radial-gradient(circle, rgba(126,34,206,0.06) 0%, transparent 70%)',
-              'radial-gradient(circle, rgba(192,38,211,0.08) 0%, transparent 70%)',
-              'radial-gradient(circle, rgba(126,34,206,0.06) 0%, transparent 70%)',
-            ],
-          }}
-          transition={{ duration: 16, repeat: Infinity, ease: 'easeInOut', delay: 4 }}
-        />
-        <motion.div className="absolute top-[40%] left-[40%] w-[400px] h-[400px] rounded-full blur-[150px]"
-          animate={{
-            background: [
-              'radial-gradient(circle, rgba(88,28,135,0.06) 0%, transparent 70%)',
-              'radial-gradient(circle, rgba(147,51,234,0.08) 0%, transparent 70%)',
-              'radial-gradient(circle, rgba(88,28,135,0.06) 0%, transparent 70%)',
-            ],
-          }}
-          transition={{ duration: 14, repeat: Infinity, ease: 'easeInOut', delay: 7 }}
-        />
+        {/* Large ambient orbs - disabled on mobile */}
+        {!isMobile && (
+          <>
+            <motion.div className="absolute top-[-5%] right-[5%] w-[700px] h-[700px] rounded-full blur-[200px]"
+              animate={{
+                background: [
+                  'radial-gradient(circle, rgba(139,92,246,0.08) 0%, transparent 70%)',
+                  'radial-gradient(circle, rgba(168,85,247,0.12) 0%, transparent 70%)',
+                  'radial-gradient(circle, rgba(109,40,217,0.08) 0%, transparent 70%)',
+                  'radial-gradient(circle, rgba(139,92,246,0.08) 0%, transparent 70%)',
+                ],
+              }}
+              transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut' }}
+            />
+            <motion.div className="absolute bottom-[-10%] left-[0%] w-[600px] h-[600px] rounded-full blur-[180px]"
+              animate={{
+                background: [
+                  'radial-gradient(circle, rgba(126,34,206,0.06) 0%, transparent 70%)',
+                  'radial-gradient(circle, rgba(192,38,211,0.08) 0%, transparent 70%)',
+                  'radial-gradient(circle, rgba(126,34,206,0.06) 0%, transparent 70%)',
+                ],
+              }}
+              transition={{ duration: 16, repeat: Infinity, ease: 'easeInOut', delay: 4 }}
+            />
+            <motion.div className="absolute top-[40%] left-[40%] w-[400px] h-[400px] rounded-full blur-[150px]"
+              animate={{
+                background: [
+                  'radial-gradient(circle, rgba(88,28,135,0.06) 0%, transparent 70%)',
+                  'radial-gradient(circle, rgba(147,51,234,0.08) 0%, transparent 70%)',
+                  'radial-gradient(circle, rgba(88,28,135,0.06) 0%, transparent 70%)',
+                ],
+              }}
+              transition={{ duration: 14, repeat: Infinity, ease: 'easeInOut', delay: 7 }}
+            />
+          </>
+        )}
+
+        {/* Simplified mobile background */}
+        {isMobile && (
+          <div className="absolute inset-0 bg-gradient-to-br from-purple-900/5 via-black/10 to-transparent" />
+        )}
 
         {/* Grid */}
         <div className="absolute inset-0 opacity-[0.02]"

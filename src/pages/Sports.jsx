@@ -94,7 +94,9 @@ const galleryData = [
   },
 ];
 
-function FloatingParticle({ delay, size, left, duration }) {
+function FloatingParticle({ delay, size, left, duration, isMobile }) {
+  if (isMobile) return null; // Disable particles on mobile
+  
   return (
     <motion.div
       className="absolute rounded-full"
@@ -448,6 +450,7 @@ function Gallery() {
             size={`${3 + i * (isMobile ? 1 : 2)}px`}
             left={10 + i * (isMobile ? 20 : 15)}
             duration={12 + i * 3}
+            isMobile={isMobile}
           />
         ))}
 

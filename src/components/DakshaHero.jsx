@@ -3,10 +3,28 @@
 import { useEffect, useRef, useState } from 'react';
 import { motion, useScroll, useTransform, useSpring, AnimatePresence } from 'framer-motion';
 
+// Mobile detection hook
+const useIsMobile = () => {
+  const [isMobile, setIsMobile] = useState(false);
+  
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+  
+  return isMobile;
+};
+
 // ═══ CALENDAR FLIP CARD COMPONENT ═══
 const FlipCard = ({ value, delay, isSeparator = false }) => {
   const [isFlipped, setIsFlipped] = useState(false);
   const [hasHovered, setHasHovered] = useState(false);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -25,10 +43,10 @@ const FlipCard = ({ value, delay, isSeparator = false }) => {
       >
         <motion.div
           className="w-2 sm:w-3 md:w-4 h-[2px] bg-purple-400/40 rounded-full"
-          animate={{
+          animate={!isMobile ? {
             scaleX: [1, 1.5, 1],
             opacity: [0.4, 0.8, 0.4],
-          }}
+          } : {}}
           transition={{
             duration: 2,
             repeat: Infinity,
@@ -43,9 +61,9 @@ const FlipCard = ({ value, delay, isSeparator = false }) => {
     <motion.div
       className="relative inline-flex cursor-pointer"
       style={{ perspective: '600px' }}
-      onHoverStart={() => setHasHovered(true)}
-      onHoverEnd={() => setHasHovered(false)}
-      whileHover={{ scale: 1.08 }}
+      onHoverStart={() => !isMobile && setHasHovered(true)}
+      onHoverEnd={() => !isMobile && setHasHovered(false)}
+      whileHover={!isMobile ? { scale: 1.08 } : {}}
       whileTap={{ scale: 0.95 }}
     >
       <div className="relative w-auto h-8 sm:h-10 md:h-14">
@@ -196,6 +214,7 @@ export default function DakshaHero() {
   const heroRef = useRef(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [activeWord, setActiveWord] = useState(0);
+  const isMobile = useIsMobile();
 
   const { scrollYProgress } = useScroll({
     target: heroRef,
@@ -226,82 +245,102 @@ export default function DakshaHero() {
     <div
       ref={heroRef}
       className="relative w-full min-h-[100dvh] flex items-center justify-center overflow-hidden"
-      style={{ background: '#030108' }}
+      style={{ background: isMobile ? '#030108' : '#030108' }}
     >
       {/* ═══ BACKGROUND ═══ */}
       <div className="absolute inset-0">
-        <div className="absolute inset-0" style={{
-          background: 'radial-gradient(ellipse 80% 60% at 50% 40%, rgba(88,28,135,0.15) 0%, rgba(15,5,25,0.5) 50%, #030108 100%)'
-        }} />
+        {/* Mobile: Static simple background */}
+        {isMobile && (
+          <div className="absolute inset-0" style={{
+            background: 'linear-gradient(180deg, #030108 0%, #1a0a2e 100%)'
+          }} />
+        )}
+        
+        {/* Desktop: Animated complex background */}
+        {!isMobile && (
+          <>
+            <div className="absolute inset-0" style={{
+              background: 'radial-gradient(ellipse 80% 60% at 50% 40%, rgba(88,28,135,0.15) 0%, rgba(15,5,25,0.5) 50%, #030108 100%)'
+            }} />
 
-        <motion.div
-          className="absolute top-0 left-[20%] w-[1px] sm:w-[2px] h-[60%]"
-          style={{
-            background: 'linear-gradient(180deg, rgba(168,85,247,0.3) 0%, transparent 100%)',
-            filter: 'blur(1px)',
-          }}
-          animate={{ opacity: [0.2, 0.5, 0.2], height: ['50%', '65%', '50%'] }}
-          transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-        />
-        <motion.div
-          className="absolute top-0 right-[25%] w-[1px] sm:w-[2px] h-[55%]"
-          style={{
-            background: 'linear-gradient(180deg, rgba(139,92,246,0.2) 0%, transparent 100%)',
-            filter: 'blur(1px)',
-          }}
-          animate={{ opacity: [0.15, 0.4, 0.15], height: ['45%', '60%', '45%'] }}
-          transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
-        />
-        <motion.div
-          className="absolute top-0 left-[55%] w-[1px] h-[45%] hidden sm:block"
-          style={{
-            background: 'linear-gradient(180deg, rgba(239,68,68,0.15) 0%, transparent 100%)',
-          }}
-          animate={{ opacity: [0.1, 0.3, 0.1] }}
-          transition={{ duration: 3.5, repeat: Infinity, ease: 'easeInOut', delay: 2 }}
-        />
+            <motion.div
+              className="absolute top-0 left-[20%] w-[1px] sm:w-[2px] h-[60%]"
+              style={{
+                background: 'linear-gradient(180deg, rgba(168,85,247,0.3) 0%, transparent 100%)',
+                filter: 'blur(1px)',
+              }}
+              animate={{ opacity: [0.2, 0.5, 0.2], height: ['50%', '65%', '50%'] }}
+              transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+            />
+            <motion.div
+              className="absolute top-0 right-[25%] w-[1px] sm:w-[2px] h-[55%]"
+              style={{
+                background: 'linear-gradient(180deg, rgba(139,92,246,0.2) 0%, transparent 100%)',
+                filter: 'blur(1px)',
+              }}
+              animate={{ opacity: [0.15, 0.4, 0.15], height: ['45%', '60%', '45%'] }}
+              transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
+            />
+            <motion.div
+              className="absolute top-0 left-[55%] w-[1px] h-[45%] hidden sm:block"
+              style={{
+                background: 'linear-gradient(180deg, rgba(239,68,68,0.15) 0%, transparent 100%)',
+              }}
+              animate={{ opacity: [0.1, 0.3, 0.1] }}
+              transition={{ duration: 3.5, repeat: Infinity, ease: 'easeInOut', delay: 2 }}
+            />
 
-        <motion.div
-          className="absolute top-[15%] left-[10%] sm:left-[30%] w-[250px] sm:w-[400px] md:w-[500px] h-[200px] sm:h-[300px] md:h-[400px] rounded-full blur-[100px] sm:blur-[150px]"
-          animate={{
-            background: [
-              'radial-gradient(circle, rgba(88,28,135,0.12) 0%, transparent 70%)',
-              'radial-gradient(circle, rgba(126,34,206,0.16) 0%, transparent 70%)',
-              'radial-gradient(circle, rgba(88,28,135,0.12) 0%, transparent 70%)',
-            ],
-          }}
-          transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
-        />
-        <motion.div
-          className="absolute bottom-[10%] right-[5%] sm:right-[20%] w-[200px] sm:w-[300px] md:w-[400px] h-[150px] sm:h-[200px] md:h-[300px] rounded-full blur-[80px] sm:blur-[130px]"
-          animate={{
-            background: [
-              'radial-gradient(circle, rgba(109,40,217,0.06) 0%, transparent 70%)',
-              'radial-gradient(circle, rgba(168,85,247,0.1) 0%, transparent 70%)',
-              'radial-gradient(circle, rgba(109,40,217,0.06) 0%, transparent 70%)',
-            ],
-          }}
-          transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut', delay: 3 }}
-        />
+            <motion.div
+              className="absolute top-[15%] left-[10%] sm:left-[30%] w-[250px] sm:w-[400px] md:w-[500px] h-[200px] sm:h-[300px] md:h-[400px] rounded-full blur-[100px] sm:blur-[150px]"
+              animate={{
+                background: [
+                  'radial-gradient(circle, rgba(88,28,135,0.12) 0%, transparent 70%)',
+                  'radial-gradient(circle, rgba(126,34,206,0.16) 0%, transparent 70%)',
+                  'radial-gradient(circle, rgba(88,28,135,0.12) 0%, transparent 70%)',
+                ],
+              }}
+              transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
+            />
+            <motion.div
+              className="absolute bottom-[10%] right-[5%] sm:right-[20%] w-[200px] sm:w-[300px] md:w-[400px] h-[150px] sm:h-[200px] md:h-[300px] rounded-full blur-[80px] sm:blur-[130px]"
+              animate={{
+                background: [
+                  'radial-gradient(circle, rgba(109,40,217,0.06) 0%, transparent 70%)',
+                  'radial-gradient(circle, rgba(168,85,247,0.1) 0%, transparent 70%)',
+                  'radial-gradient(circle, rgba(109,40,217,0.06) 0%, transparent 70%)',
+                ],
+              }}
+              transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut', delay: 3 }}
+            />
 
-        <div className="absolute inset-0 opacity-[0.03]" style={{
-          backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.15) 1px, transparent 0)',
-          backgroundSize: '30px 30px',
-        }} />
+            <div className="absolute inset-0 opacity-[0.03]" style={{
+              backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.15) 1px, transparent 0)',
+              backgroundSize: '30px 30px',
+            }} />
+          </>
+        )}
       </div>
 
       {/* ═══ SPORTS MARQUEE - Top ═══ */}
       <div className="absolute top-0 left-0 right-0 z-20">
         <div className="overflow-hidden py-2.5 sm:py-3 md:py-4 border-b border-white/[0.03]">
-          <motion.div
-            className="flex gap-8 sm:gap-12 md:gap-16 whitespace-nowrap"
-            animate={{ x: ['0%', '-50%'] }}
-            transition={{ duration: 25, repeat: Infinity, ease: 'linear' }}
-          >
-            {[...sportsEmojis, ...sportsEmojis, ...sportsEmojis].map((emoji, i) => (
-              <span key={i} className="text-lg sm:text-xl md:text-2xl opacity-20 select-none">{emoji}</span>
-            ))}
-          </motion.div>
+          {isMobile ? (
+            <div className="flex gap-8 sm:gap-12 md:gap-16 whitespace-nowrap">
+              {sportsEmojis.map((emoji, i) => (
+                <span key={i} className="text-lg sm:text-xl md:text-2xl opacity-20 select-none">{emoji}</span>
+              ))}
+            </div>
+          ) : (
+            <motion.div
+              className="flex gap-8 sm:gap-12 md:gap-16 whitespace-nowrap"
+              animate={{ x: ['0%', '-50%'] }}
+              transition={{ duration: 25, repeat: Infinity, ease: 'linear' }}
+            >
+              {[...sportsEmojis, ...sportsEmojis, ...sportsEmojis].map((emoji, i) => (
+                <span key={i} className="text-lg sm:text-xl md:text-2xl opacity-20 select-none">{emoji}</span>
+              ))}
+            </motion.div>
+          )}
         </div>
       </div>
 
@@ -479,21 +518,30 @@ export default function DakshaHero() {
               </motion.div>
 
               {/* ═══ SCROLL INDICATOR ═══ */}
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 2 }}
-                className="flex flex-col items-center gap-1.5 sm:gap-2"
-              >
+              {isMobile ? (
+                <div className="flex flex-col items-center gap-1.5 sm:gap-2">
+                  <div className="flex flex-col items-center gap-1">
+                    <div className="w-[1px] h-4 sm:h-5 md:h-6 bg-gradient-to-b from-purple-500/40 to-transparent" />
+                    <div className="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-purple-400/40" />
+                  </div>
+                </div>
+              ) : (
                 <motion.div
-                  animate={{ y: [0, 6, 0] }}
-                  transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-                  className="flex flex-col items-center gap-1"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 2 }}
+                  className="flex flex-col items-center gap-1.5 sm:gap-2"
                 >
-                  <div className="w-[1px] h-4 sm:h-5 md:h-6 bg-gradient-to-b from-purple-500/40 to-transparent" />
-                  <div className="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-purple-400/40" />
+                  <motion.div
+                    animate={{ y: [0, 6, 0] }}
+                    transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+                    className="flex flex-col items-center gap-1"
+                  >
+                    <div className="w-[1px] h-4 sm:h-5 md:h-6 bg-gradient-to-b from-purple-500/40 to-transparent" />
+                    <div className="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-purple-400/40" />
+                  </motion.div>
                 </motion.div>
-              </motion.div>
+              )}
             </motion.div>
           )}
         </AnimatePresence>
@@ -502,33 +550,57 @@ export default function DakshaHero() {
       {/* ═══ SPORTS MARQUEE - Bottom ═══ */}
       <div className="absolute bottom-0 left-0 right-0 z-20">
         <div className="overflow-hidden py-2.5 sm:py-3 md:py-4 border-t border-white/[0.03]">
-          <motion.div
-            className="flex gap-6 sm:gap-8 md:gap-10 whitespace-nowrap"
-            animate={{ x: ['-50%', '0%'] }}
-            transition={{ duration: 30, repeat: Infinity, ease: 'linear' }}
-          >
-            {[
-              'FOOTBALL', 'BASKETBALL', 'VOLLEYBALL', 'KABADDI', 'BADMINTON',
-              'CHESS', 'TABLE TENNIS', 'KHO-KHO', 'CRICKET',
-              'FOOTBALL', 'BASKETBALL', 'VOLLEYBALL', 'KABADDI', 'BADMINTON',
-              'CHESS', 'TABLE TENNIS', 'KHO-KHO', 'CRICKET',
-            ].map((sport, i) => (
-              <span key={i} className="flex items-center gap-2 sm:gap-3 md:gap-4 select-none">
-                <span
-                  className="text-[9px] sm:text-[10px] md:text-[11px] font-bold tracking-[0.2em] sm:tracking-[0.3em] uppercase"
-                  style={{
-                    color: i % 4 === 0 ? 'rgba(239,68,68,0.15)'
-                      : i % 4 === 1 ? 'rgba(168,85,247,0.15)'
-                        : i % 4 === 2 ? 'rgba(59,130,246,0.15)'
-                          : 'rgba(251,191,36,0.15)',
-                  }}
-                >
-                  {sport}
+          {isMobile ? (
+            <div className="flex gap-6 sm:gap-8 md:gap-10 whitespace-nowrap">
+              {[
+                'FOOTBALL', 'BASKETBALL', 'VOLLEYBALL', 'KABADDI', 'BADMINTON',
+                'CHESS', 'TABLE TENNIS', 'KHO-KHO', 'CRICKET',
+              ].map((sport, i) => (
+                <span key={i} className="flex items-center gap-2 sm:gap-3 md:gap-4 select-none">
+                  <span
+                    className="text-[9px] sm:text-[10px] md:text-[11px] font-bold tracking-[0.2em] sm:tracking-[0.3em] uppercase"
+                    style={{
+                      color: i % 4 === 0 ? 'rgba(239,68,68,0.15)'
+                        : i % 4 === 1 ? 'rgba(168,85,247,0.15)'
+                          : i % 4 === 2 ? 'rgba(59,130,246,0.15)'
+                            : 'rgba(251,191,36,0.15)',
+                    }}
+                  >
+                    {sport}
+                  </span>
+                  <span className="text-purple-800/30 text-[6px] sm:text-[8px]">◆</span>
                 </span>
-                <span className="text-purple-800/30 text-[6px] sm:text-[8px]">◆</span>
-              </span>
-            ))}
-          </motion.div>
+              ))}
+            </div>
+          ) : (
+            <motion.div
+              className="flex gap-6 sm:gap-8 md:gap-10 whitespace-nowrap"
+              animate={{ x: ['-50%', '0%'] }}
+              transition={{ duration: 30, repeat: Infinity, ease: 'linear' }}
+            >
+              {[
+                'FOOTBALL', 'BASKETBALL', 'VOLLEYBALL', 'KABADDI', 'BADMINTON',
+                'CHESS', 'TABLE TENNIS', 'KHO-KHO', 'CRICKET',
+                'FOOTBALL', 'BASKETBALL', 'VOLLEYBALL', 'KABADDI', 'BADMINTON',
+                'CHESS', 'TABLE TENNIS', 'KHO-KHO', 'CRICKET',
+              ].map((sport, i) => (
+                <span key={i} className="flex items-center gap-2 sm:gap-3 md:gap-4 select-none">
+                  <span
+                    className="text-[9px] sm:text-[10px] md:text-[11px] font-bold tracking-[0.2em] sm:tracking-[0.3em] uppercase"
+                    style={{
+                      color: i % 4 === 0 ? 'rgba(239,68,68,0.15)'
+                        : i % 4 === 1 ? 'rgba(168,85,247,0.15)'
+                          : i % 4 === 2 ? 'rgba(59,130,246,0.15)'
+                            : 'rgba(251,191,36,0.15)',
+                    }}
+                  >
+                    {sport}
+                  </span>
+                  <span className="text-purple-800/30 text-[6px] sm:text-[8px]">◆</span>
+                </span>
+              ))}
+            </motion.div>
+          )}
         </div>
       </div>
 
