@@ -1,33 +1,8 @@
-# Robots File for dakshagcek.netlify.app
-# Allow all search engines to crawl and index the site
-
 User-agent: *
 Allow: /
+
 Disallow: /admin/
 Disallow: /admin-dashboard/
-Disallow: /*.json$
 Disallow: /private/
-Crawl-delay: 1
 
-# Google-specific rules
-User-agent: Googlebot
-Allow: /
-Crawl-delay: 0
-
-# Bing-specific rules
-User-agent: Bingbot
-Allow: /
-Crawl-delay: 1
-
-# Sitemap location
 Sitemap: https://dakshagcek.netlify.app/sitemap.xml
-
-# Block bad bots
-User-agent: AhrefsBot
-Disallow: /
-
-User-agent: MJ12bot
-Disallow: /
-
-User-agent: SemrushBot
-Disallow: /
