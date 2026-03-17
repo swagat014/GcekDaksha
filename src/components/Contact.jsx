@@ -1,343 +1,472 @@
-import { useState, useRef, useEffect } from 'react';
-import { motion, useInView, AnimatePresence } from 'framer-motion';
-import { Mail, Phone, MapPin, Instagram, Facebook, Twitter, Linkedin, Sparkles, Users, ArrowUpRight, Zap, Heart, ExternalLink, Copy, Check, Crown, Send, Star, Shield } from 'lucide-react';
-import { contactInfo } from '../data/contact';
+import { useState, useRef, useEffect } from "react";
+import { motion, useInView, AnimatePresence } from "framer-motion";
+import {
+  Mail,
+  Phone,
+  MapPin,
+  Copy,
+  Check,
+  BookOpen,
+  GraduationCap,
+  Shield,
+  Star,
+  Sparkles,
+  ChevronRight,
+  Heart,
+} from "lucide-react";
+import { contactInfo } from "../data/contact";
 
-// Mobile detection hook
+/* ─── Mobile Hook ──────────────────────────────────────── */
 const useIsMobile = () => {
-  const [isMobile, setIsMobile] = useState(false);
-  
+  const [m, setM] = useState(false);
   useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-    
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
+    const c = () => setM(window.innerWidth < 768);
+    c();
+    window.addEventListener("resize", c);
+    return () => window.removeEventListener("resize", c);
   }, []);
-  
-  return isMobile;
+  return m;
 };
 
+/* ─── Contact Info Tile ────────────────────────────────── */
+function InfoTile({
+  icon: Icon,
+  label,
+  value,
+  id,
+  onCopy,
+  copied,
+  gradient,
+  delay,
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.5, delay, ease: [0.22, 1, 0.36, 1] }}
+      onClick={() => onCopy(value, id)}
+      className="group cursor-pointer touch-manipulation"
+    >
+      <div className="
+        relative rounded-2xl border border-purple-900/50 
+        bg-gradient-to-br from-purple-950/70 to-black/90 
+        backdrop-blur-xl hover:border-purple-600/60 
+        transition-all duration-400 p-4 sm:p-5 
+        shadow-lg shadow-black/60 active:scale-[0.98]
+      ">
+        <div
+          className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-0 group-hover:opacity-20 transition-opacity duration-500 rounded-2xl`}
+        />
+
+        <div className="relative z-10 flex items-center gap-3 sm:gap-4">
+          <div className="
+            w-10 h-10 sm:w-11 sm:h-11 rounded-xl 
+            bg-purple-900/40 border border-purple-700/40 
+            flex items-center justify-center shrink-0 
+            group-hover:scale-105 transition-transform
+          ">
+            <Icon className="w-5 h-5 text-purple-300 group-hover:text-purple-200 transition-colors" />
+          </div>
+
+          <div className="flex-1 min-w-0">
+            <div className="text-[10px] xs:text-xs font-semibold tracking-wider text-purple-400/70 uppercase mb-0.5 sm:mb-1">
+              {label}
+            </div>
+            <div className="text-sm xs:text-base font-medium text-gray-100 group-hover:text-white truncate transition-colors leading-tight">
+              {value}
+            </div>
+          </div>
+
+          <AnimatePresence mode="wait">
+            {copied === id ? (
+              <motion.div initial={{ scale: 0.8 }} animate={{ scale: 1 }} exit={{ scale: 0.8 }}>
+                <Check className="w-5 h-5 text-emerald-400" />
+              </motion.div>
+            ) : (
+              <Copy className="w-4 h-4 text-purple-400/50 opacity-0 group-hover:opacity-80 transition-opacity" />
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+/* ─── Pure Circular Profile – mobile optimized ─────────── */
+function PersonCard({
+  person,
+  index,
+  accent,
+  copiedItem,
+  onCopy,
+  isLead = false,
+  directAction = false,
+}) {
+  const initials = person.name
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .slice(0, 2);
+
+  const hasPhoto = person.photo || person.image;
+  const phoneId = `ph-${person.name}-${index}`;
+  const emailId = `em-${person.name}-${index}`;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ delay: index * 0.08, duration: 0.6 }}
+      className="group flex flex-col items-center text-center touch-manipulation px-2 xs:px-3"
+    >
+      <div className="relative mb-4 xs:mb-5">
+        <div
+          className={`
+            ${isLead 
+              ? 'w-32 h-32 xs:w-36 xs:h-36 sm:w-40 sm:h-40 md:w-44 md:h-44' 
+              : 'w-24 h-24 xs:w-28 xs:h-28 sm:w-32 sm:h-32 md:w-32 md:h-32'} 
+            rounded-full overflow-hidden
+            border-4 border-purple-800/60 group-hover:border-purple-500/80
+            shadow-2xl shadow-purple-950/50 transition-all duration-500
+            bg-gradient-to-br from-gray-950 to-black
+            active:scale-105
+          `}
+        >
+          {hasPhoto ? (
+            <img
+              src={person.photo || person.image}
+              alt={person.name}
+              className="w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-110"
+              loading="lazy"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-900 to-black">
+              <span
+                className={`${isLead ? 'text-5xl xs:text-6xl sm:text-7xl' : 'text-4xl xs:text-5xl sm:text-6xl'} font-black text-purple-700/30 tracking-tighter select-none`}
+              >
+                {initials}
+              </span>
+            </div>
+          )}
+        </div>
+
+        <div
+          className={`
+            absolute inset-0 rounded-full border-2 border-transparent
+            group-hover:border-purple-500/70 group-hover:shadow-[0_0_40px_rgba(168,85,247,0.6)]
+            transition-all duration-600 pointer-events-none
+          `}
+        />
+      </div>
+
+      <h4
+        className={`font-bold text-white tracking-tight mb-1.5 ${isLead ? 'text-xl xs:text-2xl sm:text-3xl' : 'text-lg xs:text-xl sm:text-2xl'}`}
+      >
+        {person.name}
+      </h4>
+
+      <div className="flex items-center justify-center gap-1.5 xs:gap-2 mb-4 xs:mb-5">
+        <Shield className={`w-4 h-4 ${accent.roleColor}`} />
+        <span className={`text-xs xs:text-sm font-medium ${accent.roleColor} opacity-90`}>
+          {person.role || "Coordinator"}
+        </span>
+      </div>
+
+      <div className="flex flex-wrap justify-center gap-2 xs:gap-3 w-full max-w-[260px] xs:max-w-[280px] sm:max-w-[300px]">
+        {person.phone && (
+  directAction ? (
+    <motion.a
+      whileTap={{ scale: 0.94 }}
+      href={`tel:${person.phone}`}
+      onClick={(e) => e.stopPropagation()}
+      className="
+        flex items-center gap-1.5 xs:gap-2 px-4 xs:px-5 py-2 xs:py-2.5 
+        rounded-xl text-xs xs:text-sm font-medium
+        bg-black/60 border border-purple-900/50 text-gray-200
+        hover:bg-purple-950/70 hover:border-purple-600/60 hover:text-white
+        transition-all duration-300 active:scale-95
+      "
+    >
+      <Phone className="w-4 h-4" />
+      Phone
+    </motion.a>
+  ) : (
+    <motion.button
+      whileTap={{ scale: 0.94 }}
+      onClick={(e) => {
+        e.stopPropagation();
+        onCopy(person.phone, phoneId);
+      }}
+      className="
+        flex items-center gap-1.5 xs:gap-2 px-4 xs:px-5 py-2 xs:py-2.5 
+        rounded-xl text-xs xs:text-sm font-medium
+        bg-black/60 border border-purple-900/50 text-gray-200
+        hover:bg-purple-950/70 hover:border-purple-600/60 hover:text-white
+        transition-all duration-300 active:scale-95
+      "
+    >
+      {copiedItem === phoneId ? <Check className="w-4 h-4" /> : <Phone className="w-4 h-4" />}
+      {copiedItem === phoneId ? "Copied" : "Phone"}
+    </motion.button>
+  )
+)}
+
+        {person.email && (
+  directAction ? (
+    <motion.a
+      whileTap={{ scale: 0.94 }}
+      href={`mailto:${person.email}`}
+      onClick={(e) => e.stopPropagation()}
+      className="
+        flex items-center gap-1.5 xs:gap-2 px-4 xs:px-5 py-2 xs:py-2.5 
+        rounded-xl text-xs xs:text-sm font-medium
+        bg-black/60 border border-purple-900/50 text-gray-200
+        hover:bg-purple-950/70 hover:border-purple-600/60 hover:text-white
+        transition-all duration-300 active:scale-95
+      "
+    >
+      <Mail className="w-4 h-4" />
+      Email
+    </motion.a>
+  ) : (
+    <motion.button
+      whileTap={{ scale: 0.94 }}
+      onClick={(e) => {
+        e.stopPropagation();
+        onCopy(person.email, emailId);
+      }}
+      className="
+        flex items-center gap-1.5 xs:gap-2 px-4 xs:px-5 py-2 xs:py-2.5 
+        rounded-xl text-xs xs:text-sm font-medium
+        bg-black/60 border border-purple-900/50 text-gray-200
+        hover:bg-purple-950/70 hover:border-purple-600/60 hover:text-white
+        transition-all duration-300 active:scale-95
+      "
+    >
+      {copiedItem === emailId ? <Check className="w-4 h-4" /> : <Mail className="w-4 h-4" />}
+      {copiedItem === emailId ? "Copied" : "Email"}
+    </motion.button>
+  )
+)}
+      </div>
+    </motion.div>
+  );
+}
+
+/* ─── Faculty Coordinators Block – Lead top center + 6 below ── */
+function FacultyCommitteeBlock({ title, subtitle, icon: Icon, members, accent }) {
+  const lead = members[0];
+  const others = members.slice(1);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 40 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.8 }}
+      className="relative"
+    >
+      <div className="flex items-center justify-center gap-3 xs:gap-4 mb-8 xs:mb-10 sm:mb-12">
+        <div className={`w-10 h-10 xs:w-11 xs:h-11 rounded-xl bg-gradient-to-br ${accent.iconBg} border ${accent.iconBorder} flex items-center justify-center shadow-md`}>
+          <Icon className={`w-5 h-5 ${accent.iconColor}`} />
+        </div>
+        <div className="text-center">
+          <h3 className="text-xl xs:text-2xl sm:text-3xl font-bold text-white/95">{title}</h3>
+          <p className="text-xs xs:text-sm sm:text-base text-gray-400 mt-0.5 xs:mt-1">{subtitle}</p>
+        </div>
+      </div>
+
+      <div className="flex justify-center mb-10 xs:mb-12 sm:mb-16">
+        {lead && (
+          <PersonCard
+            person={lead}
+            index={0}
+            accent={accent}
+            copiedItem={null}
+            onCopy={() => {}}
+            isLead={true}
+          />
+        )}
+      </div>
+
+      <div className="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-3 gap-6 xs:gap-8 sm:gap-10 md:gap-12 lg:gap-16 justify-items-center">
+        {others.map((person, i) => (
+          <PersonCard
+            key={i + 1}
+            person={person}
+            index={i + 1}
+            accent={accent}
+            copiedItem={null}
+            onCopy={() => {}}
+          />
+        ))}
+      </div>
+
+      <div className="mt-10 xs:mt-12 sm:mt-14 h-px bg-gradient-to-r from-transparent via-purple-600/40 to-transparent opacity-60" />
+    </motion.div>
+  );
+}
+
+/* ─── Student Coordinators Block ───────────────────────── */
+function StudentCommitteeBlock({ title, subtitle, icon: Icon, members, accent }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 40 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.8 }}
+      className="relative"
+    >
+      <div className="flex items-center justify-center gap-3 xs:gap-4 mb-8 xs:mb-10 sm:mb-12">
+        <div className={`w-10 h-10 xs:w-11 xs:h-11 rounded-xl bg-gradient-to-br ${accent.iconBg} border ${accent.iconBorder} flex items-center justify-center shadow-md`}>
+          <Icon className={`w-5 h-5 ${accent.iconColor}`} />
+        </div>
+        <div className="text-center">
+          <h3 className="text-xl xs:text-2xl sm:text-3xl font-bold text-white/95">{title}</h3>
+          <p className="text-xs xs:text-sm sm:text-base text-gray-400 mt-0.5 xs:mt-1">{subtitle}</p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-3 gap-6 xs:gap-8 sm:gap-10 md:gap-12 lg:gap-16 justify-items-center">
+        {members.map((person, i) => (
+          <PersonCard
+            key={i}
+            person={person}
+            index={i}
+            accent={accent}
+            directAction={true}
+          />
+        ))}
+      </div>
+
+      {/* <div className="mt-10 xs:mt-12 sm:mt-14 h-px bg-gradient-to-r from-transparent via-purple-600/40 to-transparent opacity-60" /> */}
+    </motion.div>
+  );
+}
+
+/* ─── Main Contact Page – Super Responsive for Mobile ───── */
 export default function Contact() {
-  const [activeCard, setActiveCard] = useState(null);
   const [copiedItem, setCopiedItem] = useState(null);
-  const [hoveredCoordinator, setHoveredCoordinator] = useState(null);
   const sectionRef = useRef(null);
-  const isInView = useInView(sectionRef, { once: true, amount: 0.1 });
+  const isInView = useInView(sectionRef, { once: true, amount: 0.05 });
   const isMobile = useIsMobile();
 
-  const copyToClipboard = (text, id) => {
+  const copy = (text, id) => {
     navigator.clipboard.writeText(text);
     setCopiedItem(id);
-    setTimeout(() => setCopiedItem(null), 2000);
+    setTimeout(() => setCopiedItem(null), 2200);
   };
 
-  const stagger = {
-    hidden: { opacity: 0 },
-    visible: { opacity: 1, transition: { staggerChildren: 0.08, delayChildren: 0.1 } },
+  const general = contactInfo.general || {};
+  const teachers = contactInfo.teachersCommittee ?? [];
+  const students = contactInfo.studentCommittee ?? [];
+
+  const teacherAccent = {
+    iconBg: "from-amber-800/50 to-orange-900/40",
+    iconBorder: "border-amber-700/50",
+    iconColor: "text-amber-300",
+    roleColor: "text-amber-300/80",
   };
 
-  const fadeUp = {
-    hidden: { opacity: 0, y: 50 },
-    visible: (i = 0) => ({
-      opacity: 1, y: 0,
-      transition: { duration: 0.8, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] },
-    }),
+  const studentAccent = {
+    iconBg: "from-cyan-800/50 to-blue-900/40",
+    iconBorder: "border-cyan-700/50",
+    iconColor: "text-cyan-300",
+    roleColor: "text-cyan-300/80",
   };
 
-  const scaleIn = {
-    hidden: { opacity: 0, scale: 0.92 },
-    visible: (i = 0) => ({
-      opacity: 1, scale: 1,
-      transition: { duration: 0.7, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] },
-    }),
-  };
-
-  const socialIcons = { Instagram, Facebook, Twitter, LinkedIn: Linkedin };
-  const socialColors = {
-    Instagram: { gradient: 'from-pink-500 via-rose-500 to-purple-600', glow: 'rgba(236,72,153,0.4)', bg: 'from-pink-500/15 to-purple-500/15' },
-    Facebook: { gradient: 'from-blue-500 to-blue-700', glow: 'rgba(59,130,246,0.4)', bg: 'from-blue-500/15 to-blue-700/15' },
-    Twitter: { gradient: 'from-sky-400 to-blue-500', glow: 'rgba(56,189,248,0.4)', bg: 'from-sky-400/15 to-blue-500/15' },
-    LinkedIn: { gradient: 'from-blue-600 to-blue-800', glow: 'rgba(37,99,235,0.4)', bg: 'from-blue-600/15 to-blue-800/15' },
-  };
-
-  const contactItems = [
-    { icon: Mail, text: contactInfo.general.email, label: 'Email Us', color: 'text-violet-400', id: 'email', gradient: 'from-violet-500/15 to-purple-500/15', borderColor: 'hover:border-violet-500/30' },
-    { icon: Phone, text: contactInfo.general.phone, label: 'Call Us', color: 'text-fuchsia-400', id: 'phone', gradient: 'from-fuchsia-500/15 to-pink-500/15', borderColor: 'hover:border-fuchsia-500/30' },
-    { icon: MapPin, text: contactInfo.general.address, label: 'Visit Us', color: 'text-purple-400', id: 'address', gradient: 'from-purple-500/15 to-indigo-500/15', borderColor: 'hover:border-purple-500/30' },
+  const contactTiles = [
+    { icon: Mail, label: "Email", id: "email", value: general.email, gradient: "from-violet-600/12 to-transparent" },
+    { icon: Phone, label: "Phone", id: "phone", value: general.phone, gradient: "from-fuchsia-600/12 to-transparent" },
+    { icon: MapPin, label: "Location", id: "address", value: general.address, gradient: "from-cyan-600/12 to-transparent" },
   ];
 
   return (
-    <section id="contact" ref={sectionRef} className="py-24 px-4 pt-28 relative overflow-hidden"
-      style={{ background: 'linear-gradient(180deg, #050208 0%, #0d0520 25%, #150a30 50%, #0d0520 75%, #050208 100%)' }}>
+    <section
+      id="contact"
+      ref={sectionRef}
+      className="
+        relative min-h-screen pt-16 xs:pt-20 sm:pt-24 md:pt-28 lg:pt-32 
+        pb-8 xs:pb-10 sm:pb-12 md:pb-14 lg:pb-16
+        px-4 xs:px-5 sm:px-6 md:px-8 lg:px-10 
+        overflow-hidden touch-pan-y
+      "
+      style={{
+        background: "linear-gradient(180deg, #0a0012 0%, #12001f 30%, #1a002e 60%, #0f001a 100%)",
+      }}
+    >
+      <div className="absolute inset-0 bg-gradient-to-br from-purple-950/30 via-black/75 to-violet-950/20 pointer-events-none" />
 
-      {/* Background Effects */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        {/* Large ambient orbs - disabled on mobile */}
-        {!isMobile && (
-          <>
-            <motion.div className="absolute top-[-5%] right-[5%] w-[700px] h-[700px] rounded-full blur-[200px]"
-              animate={{
-                background: [
-                  'radial-gradient(circle, rgba(139,92,246,0.08) 0%, transparent 70%)',
-                  'radial-gradient(circle, rgba(168,85,247,0.12) 0%, transparent 70%)',
-                  'radial-gradient(circle, rgba(109,40,217,0.08) 0%, transparent 70%)',
-                  'radial-gradient(circle, rgba(139,92,246,0.08) 0%, transparent 70%)',
-                ],
-              }}
-              transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut' }}
-            />
-            <motion.div className="absolute bottom-[-10%] left-[0%] w-[600px] h-[600px] rounded-full blur-[180px]"
-              animate={{
-                background: [
-                  'radial-gradient(circle, rgba(126,34,206,0.06) 0%, transparent 70%)',
-                  'radial-gradient(circle, rgba(192,38,211,0.08) 0%, transparent 70%)',
-                  'radial-gradient(circle, rgba(126,34,206,0.06) 0%, transparent 70%)',
-                ],
-              }}
-              transition={{ duration: 16, repeat: Infinity, ease: 'easeInOut', delay: 4 }}
-            />
-            <motion.div className="absolute top-[40%] left-[40%] w-[400px] h-[400px] rounded-full blur-[150px]"
-              animate={{
-                background: [
-                  'radial-gradient(circle, rgba(88,28,135,0.06) 0%, transparent 70%)',
-                  'radial-gradient(circle, rgba(147,51,234,0.08) 0%, transparent 70%)',
-                  'radial-gradient(circle, rgba(88,28,135,0.06) 0%, transparent 70%)',
-                ],
-              }}
-              transition={{ duration: 14, repeat: Infinity, ease: 'easeInOut', delay: 7 }}
-            />
-          </>
-        )}
-
-        {/* Simplified mobile background */}
-        {isMobile && (
-          <div className="absolute inset-0 bg-gradient-to-br from-purple-900/5 via-black/10 to-transparent" />
-        )}
-
-        {/* Grid */}
-        <div className="absolute inset-0 opacity-[0.02]"
-          style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(168,85,247,0.4) 1px, transparent 0)', backgroundSize: '48px 48px' }}
-        />
-
-        {/* Side accents */}
-        <div className="absolute left-0 top-[15%] w-[1px] h-[70%] bg-gradient-to-b from-transparent via-purple-500/15 to-transparent hidden lg:block" />
-        <div className="absolute right-0 top-[15%] w-[1px] h-[70%] bg-gradient-to-b from-transparent via-violet-500/15 to-transparent hidden lg:block" />
-
-        {/* Top/Bottom fade lines */}
-        <div className="absolute top-0 left-[10%] right-[10%] h-[1px] bg-gradient-to-r from-transparent via-purple-500/10 to-transparent" />
-        <div className="absolute bottom-0 left-[10%] right-[10%] h-[1px] bg-gradient-to-r from-transparent via-purple-500/10 to-transparent" />
-      </div>
-
-      <div className="max-w-6xl mx-auto relative z-10">
-
-        {/* ═══ Header ═══ */}
-        <motion.div variants={stagger} initial="hidden" animate={isInView ? "visible" : "hidden"} className="text-center mb-16">
-          <motion.div custom={0} variants={scaleIn}
-            className="inline-flex items-center gap-2.5 px-6 py-2.5 rounded-full bg-purple-500/[0.06] backdrop-blur-xl border border-purple-500/[0.12] mb-7">
-            <motion.div animate={{ rotate: [0, 360] }} transition={{ duration: 10, repeat: Infinity, ease: "linear" }}>
-              <Send className="w-4 h-4 text-purple-400" />
-            </motion.div>
-            <span className="text-xs font-bold text-purple-300/80 tracking-[0.25em] uppercase">Contact Us</span>
-            <motion.div animate={{ scale: [1, 1.3, 1] }} transition={{ duration: 2, repeat: Infinity }}>
-              <Sparkles className="w-3.5 h-3.5 text-purple-400/60" />
-            </motion.div>
+      <div className="max-w-7xl mx-auto relative z-10">
+        {/* Hero */}
+        <div className="text-center mb-12 xs:mb-14 sm:mb-16 md:mb-20 lg:mb-24">
+          <motion.div
+            initial={{ opacity: 0, y: -15 }}
+            animate={isInView ? { opacity: 1, y: 0 } : {}}
+            className="
+              inline-flex items-center gap-2 px-5 xs:px-6 py-2 sm:py-2.5 
+              rounded-full bg-black/60 border border-purple-900/50 
+              backdrop-blur-xl mb-6 xs:mb-8 mx-auto
+            "
+          >
+            <Sparkles className="w-4 h-4 text-purple-400" />
+            <span className="text-xs xs:text-sm font-semibold tracking-wider text-purple-300/80 uppercase">
+              Contact DAKSHA 2026
+            </span>
           </motion.div>
 
-          <motion.h2 custom={1} variants={fadeUp}
-            className="text-5xl md:text-7xl lg:text-8xl font-black mb-5"
-            style={{ fontFamily: "'Orbitron', sans-serif" }}>
-            <span className="text-white/90">GET IN </span>
-            <span className="bg-clip-text text-transparent"
-              style={{
-                backgroundImage: 'linear-gradient(135deg, #a855f7 0%, #7c3aed 30%, #c084fc 50%, #a855f7 70%, #6d28d9 100%)',
-                filter: 'drop-shadow(0 0 50px rgba(139,92,246,0.35))',
-              }}>
-              TOUCH
+          <motion.h2
+            initial={{ opacity: 0, y: 30 }}
+            animate={isInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.9, delay: 0.1 }}
+            className="
+              text-4xl xs:text-5xl sm:text-6xl md:text-7xl 
+              font-black text-white/95 tracking-tight mb-4 xs:mb-6
+            "
+            style={{ fontFamily: "'Orbitron', sans-serif" }}
+          >
+            <span className="bg-gradient-to-r from-purple-400 via-fuchsia-400 to-violet-400 bg-clip-text text-transparent">
+              Get in Touch
             </span>
           </motion.h2>
 
-          {/* Decorative divider */}
-          <motion.div custom={2} variants={fadeUp} className="flex items-center justify-center gap-4 mb-6">
-            <motion.div className="h-[1px] w-16 md:w-24 bg-gradient-to-r from-transparent to-purple-500/50"
-              initial={{ scaleX: 0, originX: 1 }} whileInView={{ scaleX: 1 }}
-              transition={{ duration: 1, delay: 0.4 }} viewport={{ once: true }} />
-            <div className="flex items-center gap-2">
-              <div className="w-1.5 h-1.5 rounded-full bg-violet-500/40" />
-              <motion.div animate={{ scale: [1, 1.4, 1], opacity: [0.5, 1, 0.5] }}
-                transition={{ duration: 2.5, repeat: Infinity }} className="w-2 h-2 rounded-full bg-purple-400" />
-              <div className="w-1.5 h-1.5 rounded-full bg-violet-500/40" />
-            </div>
-            <motion.div className="h-[1px] w-16 md:w-24 bg-gradient-to-l from-transparent to-purple-500/50"
-              initial={{ scaleX: 0, originX: 0 }} whileInView={{ scaleX: 1 }}
-              transition={{ duration: 1, delay: 0.4 }} viewport={{ once: true }} />
-          </motion.div>
-
-          <motion.p custom={3} variants={fadeUp} className="text-gray-400 max-w-lg mx-auto text-sm md:text-base font-light leading-relaxed">
-            Questions about <span className="text-purple-400 font-semibold">DAKSHA 2026</span>? Our team is ready to help you every step of the way.
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={isInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ delay: 0.2 }}
+            className="text-base xs:text-lg text-gray-300/90 max-w-lg xs:max-w-xl sm:max-w-2xl mx-auto px-4 xs:px-6 sm:px-0"
+          >
+            Have questions about DAKSHA 2026? Reach out — our team is ready to assist.
           </motion.p>
-        </motion.div>
-
-        {/* ═══ Contact Info Cards ═══ */}
-        <motion.div variants={stagger} initial="hidden" animate={isInView ? "visible" : "hidden"}
-          className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          {contactItems.map((item, index) => (
-            <motion.div key={item.id} custom={index} variants={scaleIn}
-              whileHover={{ y: -8, scale: 1.02 }}
-              onMouseEnter={() => setActiveCard(item.id)}
-              onMouseLeave={() => setActiveCard(null)}
-              className="group relative cursor-pointer"
-              onClick={() => copyToClipboard(item.text, item.id)}>
-
-              <div className={`absolute -inset-[1px] bg-gradient-to-br ${item.gradient} rounded-2xl transition-all duration-500 blur-md ${activeCard === item.id ? 'opacity-100' : 'opacity-0'}`} />
-
-              <div className={`relative bg-purple-950/20 backdrop-blur-xl rounded-2xl border border-purple-500/[0.08] ${item.borderColor} p-6 transition-all duration-500 overflow-hidden`}>
-                <div className={`absolute inset-0 bg-gradient-to-br ${item.gradient} opacity-0 group-hover:opacity-60 transition-all duration-700`} />
-                <div className="absolute inset-0 bg-gradient-to-t from-purple-950/40 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500" />
-
-                <div className="relative z-10">
-                  <div className="flex items-center justify-between mb-5">
-                    <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${item.gradient} border border-purple-400/[0.15] flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}>
-                      <item.icon className={`w-5 h-5 ${item.color}`} />
-                    </div>
-                    <AnimatePresence mode="wait">
-                      {copiedItem === item.id ? (
-                        <motion.div initial={{ scale: 0, rotate: -180 }} animate={{ scale: 1, rotate: 0 }} exit={{ scale: 0 }}
-                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/15 border border-emerald-500/25">
-                          <Check className="w-3.5 h-3.5 text-emerald-400" />
-                          <span className="text-[10px] font-bold text-emerald-400">Copied!</span>
-                        </motion.div>
-                      ) : (
-                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-purple-500/10 border border-purple-500/15 opacity-0 group-hover:opacity-100 transition-all duration-300">
-                          <Copy className="w-3 h-3 text-purple-400" />
-                          <span className="text-[9px] font-bold text-purple-400">Copy</span>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-                  <p className="text-[10px] text-purple-400/60 font-bold tracking-[0.2em] uppercase mb-2">{item.label}</p>
-                  <p className="text-sm text-gray-300 font-medium leading-relaxed group-hover:text-white transition-colors duration-300">{item.text}</p>
-                </div>
-              </div>
-            </motion.div>
-          ))}
-        </motion.div>
-
-        {/* ═══ Main Content Grid ═══ */}
-        <div className="grid lg:grid-cols-5 gap-4">
-
-          {/* Coordinators — 3 cols */}
-          <motion.div variants={stagger} initial="hidden" animate={isInView ? "visible" : "hidden"} className="lg:col-span-3">
-            <motion.div custom={0} variants={scaleIn} className="relative group/card">
-              <div className="absolute -inset-[1px] bg-gradient-to-r from-purple-500/10 via-violet-500/10 to-fuchsia-500/10 rounded-3xl opacity-0 group-hover/card:opacity-100 transition-opacity duration-700 blur-md" />
-
-              <div className="relative bg-purple-950/20 backdrop-blur-xl rounded-3xl border border-purple-500/[0.08] hover:border-purple-500/[0.15] p-6 md:p-8 transition-all duration-500 overflow-hidden">
-                {/* Subtle inner glow */}
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[60%] h-[1px] bg-gradient-to-r from-transparent via-purple-500/20 to-transparent" />
-
-                {/* Header */}
-                <div className="flex items-center justify-between mb-8">
-                  <div className="flex items-center gap-3">
-                    <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-purple-500/20 to-violet-500/20 border border-purple-400/[0.15] flex items-center justify-center">
-                      <Crown className="w-5 h-5 text-purple-400" />
-                    </div>
-                    <div>
-                      <h3 className="text-base font-bold text-white tracking-wide">Daksha Coordinators</h3>
-                      <p className="text-[10px] text-purple-400/50 font-medium">Your go-to contacts for DAKSHA</p>
-                    </div>
-                  </div>
-                  <div className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/15">
-                    <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" />
-                    <span className="text-[10px] text-emerald-400 font-bold">Available</span>
-                  </div>
-                </div>
-
-                {/* Coordinator Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {contactInfo.coordinators.map((coordinator, index) => (
-                    <motion.div key={index} custom={index + 1} variants={scaleIn}
-                      whileHover={{ y: -5, scale: 1.01 }}
-                      onMouseEnter={() => setHoveredCoordinator(index)}
-                      onMouseLeave={() => setHoveredCoordinator(null)}
-                      className="group relative">
-
-                      <div className={`absolute -inset-[1px] bg-gradient-to-br from-purple-500/25 to-violet-500/25 rounded-2xl transition-all duration-500 blur-sm ${hoveredCoordinator === index ? 'opacity-100' : 'opacity-0'}`} />
-
-                      <div className="relative p-4 rounded-2xl bg-purple-900/10 border border-purple-500/[0.06] hover:border-purple-500/[0.18] hover:bg-purple-900/20 transition-all duration-400 overflow-hidden">
-                        <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-violet-500/5 opacity-0 group-hover:opacity-100 transition-all duration-500" />
-
-                        <div className="relative z-10">
-                          {/* Avatar & Name */}
-                          <div className="flex items-start gap-3.5 mb-4">
-                            <div className="relative shrink-0">
-                              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-600/30 to-violet-600/30 border border-purple-400/20 flex items-center justify-center shadow-lg shadow-purple-500/10">
-                                <span className="text-sm font-black bg-clip-text text-transparent bg-gradient-to-br from-purple-300 to-violet-300">
-                                  {coordinator.name.split(' ').map(n => n[0]).join('')}
-                                </span>
-                              </div>
-                              <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-400 rounded-full border-2 border-[#0d0520]" />
-                            </div>
-
-                            <div className="flex-1 min-w-0">
-                              <h4 className="text-sm font-bold text-white truncate">{coordinator.name}</h4>
-                              <div className="flex items-center gap-1.5 mt-1">
-                                <Shield className="w-3 h-3 text-purple-400" />
-                                <span className="text-[10px] text-purple-400 font-semibold">{coordinator.role}</span>
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Contact Details */}
-                          <div className="space-y-1.5">
-                            {[
-                              { icon: Phone, text: coordinator.phone, color: 'text-fuchsia-400', copyId: `coord-phone-${index}` },
-                              { icon: Mail, text: coordinator.email, color: 'text-violet-400', copyId: `coord-email-${index}` },
-                            ].map((detail, di) => (
-                              <motion.div key={di} whileHover={{ x: 4 }}
-                                onClick={(e) => { e.stopPropagation(); copyToClipboard(detail.text, detail.copyId); }}
-                                className="flex items-center gap-2.5 p-2 rounded-xl hover:bg-purple-500/[0.06] transition-all cursor-pointer group/item">
-                                <div className="w-7 h-7 rounded-lg bg-purple-500/[0.08] border border-purple-500/[0.1] flex items-center justify-center group-hover/item:border-purple-500/25 group-hover/item:bg-purple-500/[0.12] transition-all">
-                                  <detail.icon className={`w-3 h-3 ${detail.color}`} />
-                                </div>
-                                <span className="text-[11px] text-gray-500 group-hover/item:text-gray-200 transition-colors flex-1 truncate">{detail.text}</span>
-                                <AnimatePresence mode="wait">
-                                  {copiedItem === detail.copyId ? (
-                                    <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }}>
-                                      <Check className="w-3 h-3 text-emerald-400" />
-                                    </motion.div>
-                                  ) : (
-                                    <Copy className="w-3 h-3 text-purple-700 opacity-0 group-hover/item:opacity-100 transition-opacity" />
-                                  )}
-                                </AnimatePresence>
-                              </motion.div>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    </motion.div>
-                  ))}
-                </div>
-              </div>
-            </motion.div>
-          </motion.div>
-
-          {/* Right Column — 2 cols */}
-          <motion.div variants={stagger} initial="hidden" animate={isInView ? "visible" : "hidden"} className="lg:col-span-2 space-y-4">
-          </motion.div>
         </div>
 
-        {/* Bottom Decorative */}
-        <motion.div initial={{ opacity: 0 }} animate={isInView ? { opacity: 1 } : {}}
-          transition={{ delay: 1 }} className="mt-16 flex items-center justify-center gap-4">
-          <div className="h-[1px] flex-1 max-w-[80px] bg-gradient-to-r from-transparent to-purple-500/15" />
-          <Star className="w-3 h-3 text-purple-600/40" />
-          <p className="text-[10px] text-purple-600/40 tracking-[0.3em] uppercase font-bold">DAKSHA 2026</p>
-          <Star className="w-3 h-3 text-purple-600/40" />
-          <div className="h-[1px] flex-1 max-w-[80px] bg-gradient-to-l from-transparent to-purple-500/15" />
-        </motion.div>
+        {/* Contact Tiles */}
+        <div className="grid grid-cols-1 xs:grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 xs:gap-5 sm:gap-6 mb-12 xs:mb-14 sm:mb-16 md:mb-20 lg:mb-24">
+          {contactTiles.map((tile, i) => (
+            <InfoTile key={tile.id} {...tile} onCopy={copy} copied={copiedItem} delay={i * 0.08} />
+          ))}
+        </div>
+
+        {/* Committees */}
+        <div className="space-y-16 xs:space-y-20 sm:space-y-24 md:space-y-28 lg:space-y-32 mb-6 xs:mb-8 sm:mb-10 md:mb-12">
+          <FacultyCommitteeBlock
+            title="Faculty Coordinators"
+            subtitle="Academic & Institutional Guidance"
+            icon={BookOpen}
+            members={teachers}
+            accent={teacherAccent}
+          />
+
+          <StudentCommitteeBlock
+            title="Student Coordinators"
+            subtitle="Event Execution & Campus Connect"
+            icon={GraduationCap}
+            members={students}
+            accent={studentAccent}
+          />
+        </div>
       </div>
     </section>
   );

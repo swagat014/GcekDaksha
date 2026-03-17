@@ -22,8 +22,8 @@ const galleryData = [
     gradient: 'from-cyan-500 via-blue-500 to-indigo-600',
     glow: 'rgba(6, 182, 212, 0.4)',
     images: [
-      { id: 'c1', url: 'https://images.unsplash.com/photo-1531415074968-036ba1b575da?w=800&q=80', title: 'Perfect Swing', likes: 312 },
-      { id: 'c2', url: 'https://images.unsplash.com/photo-1624526267942-ab0ff8a3e972?w=800&q=80', title: 'Team Spirit', likes: 267 },
+      { id: 'c1', url: '/cri1.jpg', title: 'Perfect Swing', likes: 312 },
+      { id: 'c2', url: '/cri2.jpg', title: 'Team Spirit', likes: 267 },
     ]
   },
   {
@@ -33,8 +33,8 @@ const galleryData = [
     gradient: 'from-amber-500 via-orange-500 to-yellow-600',
     glow: 'rgba(245, 158, 11, 0.4)',
     images: [
-      { id: 'v1', url: 'https://images.unsplash.com/photo-1612872087720-bb876e2e67d1?w=800&q=80', title: 'Spike Attack', likes: 198 },
-      { id: 'v2', url: 'https://images.unsplash.com/photo-1547347298-4074fc3086f0?w=800&q=80', title: 'Team Huddle', likes: 156 },
+      { id: 'v1', url: '/volley1.jpg', title: 'Spike Attack', likes: 198 },
+      { id: 'v2', url: '/volley2.jpg', title: 'Team Huddle', likes: 156 },
     ]
   },
   {
@@ -55,8 +55,8 @@ const galleryData = [
     gradient: 'from-lime-500 via-emerald-500 to-green-600',
     glow: 'rgba(132, 204, 22, 0.4)',
     images: [
-      { id: 'bd1', url: 'https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=800&q=80', title: 'Smash Shot', likes: 167 },
-      { id: 'bd2', url: 'https://images.unsplash.com/photo-1599391398131-cd12dfc6c24e?w=800&q=80', title: 'Finals Match', likes: 145 },
+      { id: 'bd1', url: '/bad2.jpeg', title: 'Smash Shot', likes: 167 },
+      { id: 'bd2', url: '/bad1.jpeg', title: 'Finals Match', likes: 145 },
     ]
   },
   // {
@@ -77,8 +77,8 @@ const galleryData = [
     gradient: 'from-slate-400 via-gray-500 to-zinc-600',
     glow: 'rgba(148, 163, 184, 0.4)',
     images: [
-      { id: 'ch1', url: 'https://images.unsplash.com/photo-1529699211952-734e80c4d42b?w=800&q=80', title: 'Checkmate Moment', likes: 178 },
-      { id: 'ch2', url: 'https://images.unsplash.com/photo-1560174038-da43ac74f01b?w=800&q=80', title: 'Strategic Play', likes: 156 },
+      { id: 'ch1', url: '/chess1.jpg', title: 'Checkmate Moment', likes: 178 },
+      { id: 'ch2', url: '/chess2.jpg', title: 'Strategic Play', likes: 156 },
     ]
   },
   {
@@ -88,8 +88,8 @@ const galleryData = [
     gradient: 'from-pink-500 via-rose-500 to-red-600',
     glow: 'rgba(244, 63, 94, 0.4)',
     images: [
-      { id: 't1', url: '/kabbadi.webp', title: 'Rally Action', likes: 134 },
-      { id: 't2', url: '/kabbadi1.jpg', title: 'Championship Point', likes: 112 },
+      { id: 't1', url: '/kab1.jpeg', title: 'Rally Action', likes: 134 },
+      { id: 't2', url: '/kab2.jpeg', title: 'Championship Point', likes: 112 },
     ]
   },
 ];
