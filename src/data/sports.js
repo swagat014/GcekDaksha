@@ -75,7 +75,7 @@ export const sports = [
     id: 10,
     name: "Cricket",
     teamSize: 16,
-    fee: 4000,
+    fee: 2800,
     icon: "🏏",
     description: "16 a side cricket championship tournament",
   },

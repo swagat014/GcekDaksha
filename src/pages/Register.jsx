@@ -59,7 +59,7 @@ export default function Register() {
     'Badminton (Boys)': '/2000.jpeg',
     'Badminton (Girls)': '/1500.jpeg',
     'Chess': '/1500.jpeg',
-    'Cricket': '/4000.jpeg',
+    'Cricket': '/2800.png',
   };
 
   const handleImageFileChange = (file) => {
