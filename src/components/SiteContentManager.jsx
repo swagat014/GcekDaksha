@@ -455,6 +455,30 @@ export default function SiteContentManager({ initialData, initialPreviewMode, on
       {/* ================= TAB 3: SPORTS REGISTRATIONS & FEES ================= */}
       {activeTab === "sports" && (
         <div className={cardClass}>
+          {/* Registration Live Status Toggle Card */}
+          <div className="bg-white/[0.02] border border-white/[0.06] hover:border-purple-500/20 p-5 rounded-2xl flex items-center justify-between gap-4 transition-all mb-6">
+            <div className="space-y-1">
+              <h4 className="text-sm font-bold text-white flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-purple-400" /> Registration Live Switch
+              </h4>
+              <p className="text-gray-400 text-xs">Toggle whether visitors can submit new team registrations on the website.</p>
+            </div>
+            <button
+              onClick={() => {
+                const currentStatus = content.registration?.isLive !== false;
+                update(["registration", "isLive"], !currentStatus);
+                showToast(`Registration status set to ${!currentStatus ? 'LIVE' : 'CLOSED'}.`, "success");
+              }}
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border ${
+                (content.registration?.isLive !== false) 
+                  ? "bg-emerald-500/10 hover:bg-emerald-500/20 border-emerald-500/30 text-emerald-400 shadow-md shadow-emerald-500/5 font-extrabold" 
+                  : "bg-red-500/10 hover:bg-red-500/20 border-red-500/30 text-red-400"
+              }`}
+            >
+              {(content.registration?.isLive !== false) ? "● LIVE" : "○ CLOSED"}
+            </button>
+          </div>
+
           <div className="flex justify-between items-center border-b border-white/[0.06] pb-3">
             <h3 className="text-base md:text-lg font-display font-black text-white flex items-center gap-2.5">
               <PencilLine className="w-5 h-5 text-emerald-400" /> Sports Registrations, Fees & QR Codes
@@ -578,6 +602,30 @@ export default function SiteContentManager({ initialData, initialPreviewMode, on
           <h3 className={sectionTitleClass}>
             <Home className="w-5 h-5 text-purple-400" /> Accommodation Booking & Hostel Charges
           </h3>
+
+          {/* Accommodation Live Status Toggle Card */}
+          <div className="bg-white/[0.02] border border-white/[0.06] hover:border-purple-500/20 p-5 rounded-2xl flex items-center justify-between gap-4 transition-all mb-6">
+            <div className="space-y-1">
+              <h4 className="text-sm font-bold text-white flex items-center gap-2">
+                <Home className="w-4 h-4 text-purple-400" /> Accommodation Booking Live Switch
+              </h4>
+              <p className="text-gray-400 text-xs">Toggle whether visitors can request hostel booking and food accommodations.</p>
+            </div>
+            <button
+              onClick={() => {
+                const currentStatus = content.registration?.isAccommodationLive !== false;
+                update(["registration", "isAccommodationLive"], !currentStatus);
+                showToast(`Accommodation status set to ${!currentStatus ? 'LIVE' : 'CLOSED'}.`, "success");
+              }}
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border ${
+                (content.registration?.isAccommodationLive !== false) 
+                  ? "bg-emerald-500/10 hover:bg-emerald-500/20 border-emerald-500/30 text-emerald-400 shadow-md shadow-emerald-500/5 font-extrabold" 
+                  : "bg-red-500/10 hover:bg-red-500/20 border-red-500/30 text-red-400"
+              }`}
+            >
+              {(content.registration?.isAccommodationLive !== false) ? "● LIVE" : "○ CLOSED"}
+            </button>
+          </div>
           
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             

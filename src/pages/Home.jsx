@@ -15,6 +15,28 @@ export default function Home() {
   const [isMobile, setIsMobile] = useState(false);
   const [imgError, setImgError] = useState(false);
   const siteContent = useSiteContent();
+  const [showAnnouncement, setShowAnnouncement] = useState(false);
+
+  useEffect(() => {
+    const isRegLive = siteContent.registration?.isLive !== false;
+    const isAccLive = siteContent.registration?.isAccommodationLive !== false;
+    const eitherLive = isRegLive || isAccLive;
+
+    if (eitherLive) {
+      const shown = sessionStorage.getItem("daksha_announcement_shown");
+      if (!shown) {
+        const timer = setTimeout(() => {
+          setShowAnnouncement(true);
+        }, 1200);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [siteContent]);
+
+  const handleCloseAnnouncement = () => {
+    sessionStorage.setItem("daksha_announcement_shown", "true");
+    setShowAnnouncement(false);
+  };
 
   useEffect(() => {
     setIsLoaded(true);
@@ -957,6 +979,125 @@ export default function Home() {
 
       {/* Bottom Fade */}
       <div className="h-16 sm:h-24 md:h-32 bg-gradient-to-b from-transparent to-[#020205] relative z-10" />
+
+      {/* ================= PREMIUM HIGH-FIDELITY ANNOUNCEMENT MODAL ================= */}
+      <AnimatePresence>
+        {showAnnouncement && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm"
+            onClick={handleCloseAnnouncement}
+          >
+            <motion.div
+              initial={{ scale: 0.93, opacity: 0, y: 30 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.93, opacity: 0, y: 30 }}
+              className="bg-[#07070f] border border-white/[0.08] max-w-md w-full rounded-3xl shadow-2xl p-6 md:p-8 relative overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Decorative Glow */}
+              <div className="absolute top-0 right-0 w-44 h-44 bg-gradient-to-br from-purple-500/10 to-transparent blur-3xl rounded-full pointer-events-none" />
+              <div className="absolute bottom-0 left-0 w-44 h-44 bg-gradient-to-tr from-emerald-500/5 to-transparent blur-3xl rounded-full pointer-events-none" />
+
+              <div className="flex flex-col items-center text-center space-y-5">
+                
+                {/* Visual Icon Badge */}
+                <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shadow-lg shadow-emerald-500/5 relative">
+                  <Sparkles className="w-7 h-7 text-emerald-400 animate-pulse" />
+                  <span className="absolute -top-1.5 -right-1.5 flex h-4 w-4">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-4 w-4 bg-emerald-500 border-2 border-slate-950"></span>
+                  </span>
+                </div>
+
+                <div className="space-y-2">
+                  <span className="text-[10px] font-extrabold text-emerald-400 uppercase tracking-widest bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 rounded-full">
+                    🎉 PORTAL ACTIVE
+                  </span>
+                  <h3 className="text-xl md:text-2xl font-black text-white font-display uppercase tracking-wide pt-1">
+                    Daksha {new Date().getFullYear()} is Live!
+                  </h3>
+                  <p className="text-xs text-gray-400 leading-relaxed px-1">
+                    {(() => {
+                      const isRegLive = siteContent.registration?.isLive !== false;
+                      const isAccLive = siteContent.registration?.isAccommodationLive !== false;
+                      if (isRegLive && isAccLive) {
+                        return "Great news! Dynamic registrations for sports tournaments and campus hostel bookings are officially open. Secure your team slots and accommodation before they fill up!";
+                      } else if (isRegLive) {
+                        return "Great news! Online team registrations for all 9+ sports tournaments are officially open. Build your squad and register now!";
+                      } else {
+                        return `Great news! Official food and hostel bookings for Daksha ${new Date().getFullYear()} are officially open. Complete your accommodations now!`;
+                      }
+                    })()}
+                  </p>
+                </div>
+
+                {/* Status Indicator Badges */}
+                <div className="flex flex-wrap items-center justify-center gap-2.5 w-full pt-1">
+                  {(() => {
+                    const isRegLive = siteContent.registration?.isLive !== false;
+                    return (
+                      <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-[10px] font-bold ${
+                        isRegLive 
+                          ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400" 
+                          : "bg-red-500/10 border-red-500/20 text-red-400"
+                      }`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${isRegLive ? 'bg-emerald-400 animate-pulse' : 'bg-red-400'}`} />
+                        Sports: {isRegLive ? "LIVE NOW" : "CLOSED"}
+                      </div>
+                    );
+                  })()}
+                  {(() => {
+                    const isAccLive = siteContent.registration?.isAccommodationLive !== false;
+                    return (
+                      <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-[10px] font-bold ${
+                        isAccLive 
+                          ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400" 
+                          : "bg-red-500/10 border-red-500/20 text-red-400"
+                      }`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${isAccLive ? 'bg-emerald-400 animate-pulse' : 'bg-red-400'}`} />
+                        Hostel: {isAccLive ? "LIVE NOW" : "CLOSED"}
+                      </div>
+                    );
+                  })()}
+                </div>
+
+                {/* CTAs */}
+                <div className="flex flex-col gap-2 w-full pt-3">
+                  {siteContent.registration?.isLive !== false && (
+                    <a
+                      href="#register"
+                      onClick={handleCloseAnnouncement}
+                      className="w-full py-3 bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-700 hover:to-fuchsia-700 text-white rounded-xl text-xs font-bold transition-all text-center flex items-center justify-center gap-1.5 shadow-lg shadow-purple-500/25"
+                    >
+                      <Trophy className="w-3.5 h-3.5" /> Register Your Team Now
+                    </a>
+                  )}
+                  {siteContent.registration?.isAccommodationLive !== false && (
+                    <a
+                      href="#accommodation"
+                      onClick={handleCloseAnnouncement}
+                      className="w-full py-3 bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] hover:border-white/20 text-white rounded-xl text-xs font-bold transition-all text-center flex items-center justify-center gap-1.5"
+                    >
+                      <Building2 className="w-3.5 h-3.5 text-purple-400" /> Book Hostel Accommodation
+                    </a>
+                  )}
+                  <button
+                    type="button"
+                    onClick={handleCloseAnnouncement}
+                    className="w-full py-2.5 text-gray-500 hover:text-gray-300 text-xs font-semibold transition-all pt-1"
+                  >
+                    Maybe Later
+                  </button>
+                </div>
+
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

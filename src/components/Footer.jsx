@@ -149,7 +149,7 @@ export default function Footer() {
             <div className="space-y-3.5">
               {[
                 { icon: Mail, text: generalContact.email || 'dakshagcek@gmail.com', color: 'text-violet-400' },
-                { icon: Phone, text: generalContact.phone || '+91 63712 82542', color: 'text-fuchsia-400' },
+                // { icon: Phone, text: generalContact.phone || '+91 63712 82542', color: 'text-fuchsia-400' },
                 { icon: MapPin, text: generalContact.address || 'Government College Of Engineering, Kalahandi, Bhawanipatna, Odisha 766001', color: 'text-purple-400' },
               ].map((item, index) => (
                 <motion.div key={index} whileHover={{ x: 4 }}
@@ -181,7 +181,7 @@ export default function Footer() {
 
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2 text-gray-600 text-xs">
-              <span>© 2026</span>
+              <span>© {new Date().getFullYear()}</span>
               <span className="text-purple-500/60 font-bold">DAKSHA</span>
               <span>—</span>
               <span>Inter College Sports Tournament</span>
@@ -189,7 +189,7 @@ export default function Footer() {
 
             <div className="flex items-center gap-2 text-[11px] text-gray-700">
               <span>Crafted with</span>
-              <motion.div  animate={{ scale: [1, 1.3, 1] }} transition={{ duration: 1.5, repeat: Infinity }}>
+              <motion.div animate={{ scale: [1, 1.3, 1] }} transition={{ duration: 1.5, repeat: Infinity }}>
                 <Heart className="w-3 h-3 text-purple-500 fill-purple-500" />
               </motion.div>
               <span>by swagat ranjan choudhury</span>

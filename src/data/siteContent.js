@@ -93,6 +93,8 @@ export const defaultSiteContent = {
     ],
   },
   registration: {
+    isLive: true,
+    isAccommodationLive: true,
     sports: defaultSports.map((sport) => ({
       ...sport,
       qrCode:

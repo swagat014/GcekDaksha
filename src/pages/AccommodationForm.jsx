@@ -9,6 +9,7 @@ const AccommodationForm = () => {
   const siteContent = useSiteContent();
   const sports = siteContent.registration?.sports || [];
   const PRICE = Number(siteContent.registration?.accommodationCharge || 550);
+  const isAccommodationLive = siteContent.registration?.isAccommodationLive !== false;
   const [form, setForm] = useState({
     teamName: "",
     collegeName: "",
@@ -295,14 +296,22 @@ const AccommodationForm = () => {
       <div className="max-w-2xl mx-auto relative z-10">
         {/* Header */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-10">
-          <motion.div 
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-5"
-            style={{ background: 'linear-gradient(135deg, rgba(147,51,234,0.2) 0%, rgba(139,92,246,0.1) 100%)', border: '1px solid rgba(147,51,234,0.3)' }}
-            whileHover={{ scale: 1.02 }}
-          >
-            <Zap className="w-3.5 h-3.5 text-purple-400" />
-            <span className="text-xs font-bold text-purple-300 tracking-widest uppercase">DAKSHA 2026</span>
-          </motion.div>
+          {isAccommodationLive ? (
+            <motion.div 
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[10px] font-extrabold uppercase tracking-widest animate-pulse mb-5 shadow-lg shadow-emerald-500/5 cursor-default"
+              whileHover={{ scale: 1.02 }}
+            >
+              ● Accommodation is Live Now
+            </motion.div>
+          ) : (
+            <motion.div 
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-5"
+              style={{ background: 'linear-gradient(135deg, rgba(239,68,68,0.2) 0%, rgba(239,68,68,0.1) 100%)', border: '1px solid rgba(239,68,68,0.3)' }}
+            >
+              <Zap className="w-3.5 h-3.5 text-red-400" />
+              <span className="text-xs font-bold text-red-300 tracking-widest uppercase">Accommodation Closed</span>
+            </motion.div>
+          )}
           
           <h2 className="text-4xl md:text-5xl font-black mb-3" style={{ fontFamily: "'Orbitron', sans-serif" }}>
             <span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-fuchsia-400 to-violet-400"
@@ -319,7 +328,8 @@ const AccommodationForm = () => {
         </motion.div>
 
         {/* Form Card */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+        {isAccommodationLive ? (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
           <div className="relative">
             {/* Card glow */}
             <div className="absolute -inset-[1px] bg-gradient-to-r from-purple-600/20 via-fuchsia-600/20 to-violet-600/20 rounded-3xl blur-sm" />
@@ -557,6 +567,44 @@ const AccommodationForm = () => {
             </div>
           </div>
         </motion.div>
+        ) : (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="relative mt-8"
+          >
+            <div className="absolute -inset-[1px] bg-gradient-to-r from-purple-600/20 via-fuchsia-600/20 to-violet-600/20 rounded-3xl blur-sm" />
+            <div
+              className="relative rounded-3xl p-8 text-center space-y-6 border border-purple-500/10"
+              style={{
+                background: 'linear-gradient(180deg, rgba(15,5,25,0.95) 0%, rgba(10,3,20,0.98) 100%)',
+              }}
+            >
+              <div className="w-16 h-16 rounded-full bg-purple-500/10 border border-purple-500/20 flex items-center justify-center mx-auto shadow-lg shadow-purple-500/10">
+                <AlertCircle className="w-8 h-8 text-purple-400" />
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-2xl font-black text-white font-display uppercase tracking-wider">Accommodation Closed</h3>
+                <p className="text-gray-400 text-sm max-w-md mx-auto leading-relaxed">
+                  Hostel room bookings and food reservations are currently offline or fully occupied.
+                </p>
+              </div>
+              <div className="pt-2">
+                <p className="text-xs text-gray-500">
+                  Please coordinate directly with official hostel wardens or contact support:
+                </p>
+                <a
+                  href={`https://wa.me/${siteContent.registration?.supportWhatsapp || '9875325878'}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 mt-3 px-5 py-2.5 bg-purple-600/10 hover:bg-purple-600/20 border border-purple-500/20 hover:border-purple-500/40 text-purple-300 hover:text-purple-200 rounded-xl text-xs font-bold transition-all"
+                >
+                  <Phone className="w-3.5 h-3.5" /> Contact Support WhatsApp
+                </a>
+              </div>
+            </div>
+          </motion.div>
+        )}
       </div>
     </section>
   );
