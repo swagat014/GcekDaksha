@@ -5,9 +5,9 @@ import {
   CreditCard, Sparkles, Shield, Star, ChevronRight, CheckCircle2, AlertCircle,
   X, Zap
 } from 'lucide-react';
-import { sports } from '../data/sports';
 import { supabase } from "../supabaseClient";
 import { uploadFile } from "../utils/uploadFile";
+import { useSiteContent } from '../contexts/SiteContentContext';
 
 export default function Register() {
   const [formData, setFormData] = useState({
@@ -31,6 +31,8 @@ export default function Register() {
   const [toast, setToast] = useState({ show: false, message: '', type: '' });
   const [lastSubmission, setLastSubmission] = useState(null);
   const [step, setStep] = useState(1);
+  const siteContent = useSiteContent();
+  const sports = siteContent.registration?.sports || [];
 
   // Performance monitoring for low-tier mobiles
   useEffect(() => {
@@ -49,18 +51,10 @@ export default function Register() {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  const sportQRMapping = {
-    // 'Football': '/4000.jpeg',
-    'Volleyball': '/3000.jpeg',
-    'Kho-Kho (Boys)': '/3000.jpeg',
-    'Kho-Kho (Girls)': '/3000.jpeg',
-    'Kabaddi (Boys)': '/3000.jpeg',
-    'Kabaddi (Girls)': '/3000.jpeg',
-    'Badminton (Boys)': '/2000.jpeg',
-    'Badminton (Girls)': '/1500.jpeg',
-    'Chess': '/1500.jpeg',
-    'Cricket': '/2800.png',
-  };
+  const sportQRMapping = sports.reduce((acc, sport) => {
+    acc[sport.name] = sport.qrCode || '';
+    return acc;
+  }, {});
 
   const handleImageFileChange = (file) => {
     if (!file) return null;
@@ -379,7 +373,7 @@ export default function Register() {
           <p className="text-red-400 text-sm mt-1">
             For any problem in the accommodation or registration form please contact us on our{' '}
             <a
-              href="https://wa.me/9875325878"
+              href={`https://wa.me/${siteContent.registration?.supportWhatsapp || '9875325878'}`}
               target="_blank"
               rel="noopener noreferrer"
               className="text-purple-400 hover:underline"

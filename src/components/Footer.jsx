@@ -1,10 +1,13 @@
 import { useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
 import { Trophy, Heart, Sparkles, Star, ArrowUp, Mail, Phone, MapPin, Instagram, Facebook, Twitter, Linkedin, ChevronRight, Zap, Crown, Shield } from 'lucide-react';
+import { useSiteContent } from '../contexts/SiteContentContext';
 
 export default function Footer() {
   const footerRef = useRef(null);
   const isInView = useInView(footerRef, { once: true, amount: 0.1 });
+  const siteContent = useSiteContent();
+  const generalContact = siteContent.contact?.general || {};
 
   const stagger = {
     hidden: { opacity: 0 },
@@ -145,9 +148,9 @@ export default function Footer() {
             </h4>
             <div className="space-y-3.5">
               {[
-                { icon: Mail, text: 'dakshagcek@gmail.com', color: 'text-violet-400' },
-                { icon: Phone, text: '+91 63712 82542', color: 'text-fuchsia-400' },
-                { icon: MapPin, text: 'Government College Of Engineering, Kalahandi, Bhawanipatna, Odisha 766001', color: 'text-purple-400' },
+                { icon: Mail, text: generalContact.email || 'dakshagcek@gmail.com', color: 'text-violet-400' },
+                { icon: Phone, text: generalContact.phone || '+91 63712 82542', color: 'text-fuchsia-400' },
+                { icon: MapPin, text: generalContact.address || 'Government College Of Engineering, Kalahandi, Bhawanipatna, Odisha 766001', color: 'text-purple-400' },
               ].map((item, index) => (
                 <motion.div key={index} whileHover={{ x: 4 }}
                   className="flex items-start gap-3 group cursor-default">

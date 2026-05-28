@@ -14,7 +14,7 @@ import {
   ChevronRight,
   Heart,
 } from "lucide-react";
-import { contactInfo } from "../data/contact";
+import { useSiteContent } from "../contexts/SiteContentContext";
 
 /* ─── Mobile Hook ──────────────────────────────────────── */
 const useIsMobile = () => {
@@ -359,9 +359,10 @@ export default function Contact() {
     setTimeout(() => setCopiedItem(null), 2200);
   };
 
-  const general = contactInfo.general || {};
-  const teachers = contactInfo.teachersCommittee ?? [];
-  const students = contactInfo.studentCommittee ?? [];
+  const siteContent = useSiteContent();
+  const general = siteContent.contact?.general || {};
+  const teachers = siteContent.contact?.teachersCommittee ?? [];
+  const students = siteContent.contact?.studentCommittee ?? [];
 
   const teacherAccent = {
     iconBg: "from-amber-800/50 to-orange-900/40",

@@ -2,8 +2,9 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence, useInView, useScroll, useTransform } from 'framer-motion';
 import { X, ZoomIn, Camera, Sparkles, ChevronLeft, ChevronRight, Heart, Share2, Download, Eye, Play } from 'lucide-react';
+import { useSiteContent } from '../contexts/SiteContentContext';
 
-const galleryData = [
+const defaultGalleryData = [
   // {
   //   id: 1,
   //   sport: 'Football',
@@ -121,7 +122,7 @@ function FloatingParticle({ delay, size, left, duration, isMobile }) {
   );
 }
 
-function SportCard({ sport, index, onImageClick, allImages, isMobile }) {
+function SportCard({ sport, index, onImageClick, allImages, totalSections, isMobile }) {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: '-30px' });
   const isEven = index % 2 === 0;
@@ -197,7 +198,7 @@ function SportCard({ sport, index, onImageClick, allImages, isMobile }) {
       </div>
 
       {/* Section Divider */}
-      {index < galleryData.length - 1 && (
+      {index < totalSections - 1 && (
         <motion.div
           initial={{ scaleX: 0 }}
           animate={isInView ? { scaleX: 1 } : {}}
@@ -328,6 +329,8 @@ function ImageCard({ image, sport, imgIndex, isInView, delay, onClick, isMobile 
 }
 
 function Gallery() {
+  const siteContent = useSiteContent();
+  const galleryData = siteContent.gallery?.sections || defaultGalleryData;
   const [selectedImageIndex, setSelectedImageIndex] = useState(null);
   const [touchStart, setTouchStart] = useState(null);
   const [isMobile, setIsMobile] = useState(false);
@@ -561,6 +564,7 @@ function Gallery() {
               index={index}
               onImageClick={openLightbox}
               allImages={allImages}
+              totalSections={galleryData.length}
               isMobile={isMobile}
             />
           ))}

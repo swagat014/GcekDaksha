@@ -3,11 +3,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Check, User, Phone, Trophy, Building2, Upload, CreditCard, Sparkles, Shield, Star, ChevronRight, CheckCircle2, AlertCircle, X, Zap, Users } from 'lucide-react';
 import { supabase } from "../supabaseClient";
 import PlayerCheckbox from "../components/PlayerCheckbox";
-import { sports } from '../data/sports';
-
-const PRICE = 550;
+import { useSiteContent } from "../contexts/SiteContentContext";
 
 const AccommodationForm = () => {
+  const siteContent = useSiteContent();
+  const sports = siteContent.registration?.sports || [];
+  const PRICE = Number(siteContent.registration?.accommodationCharge || 550);
   const [form, setForm] = useState({
     teamName: "",
     collegeName: "",
@@ -313,7 +314,7 @@ const AccommodationForm = () => {
             It includes the charges for Food + Accommodation for 3 days
           </p>
           <p className="text-red-400 text-sm">
-            For any problem in the accomodation or registration form please contact us on our <a href="https://wa.me/9875325878" target="_blank" rel="noopener noreferrer" className="text-purple-400 hover:underline">WhatsApp</a>
+            For any problem in the accomodation or registration form please contact us on our <a href={`https://wa.me/${siteContent.registration?.supportWhatsapp || "9875325878"}`} target="_blank" rel="noopener noreferrer" className="text-purple-400 hover:underline">WhatsApp</a>
           </p>
         </motion.div>
 
@@ -490,7 +491,7 @@ const AccommodationForm = () => {
                                 <span className="text-xs font-semibold text-amber-400">Scan QR Code</span>
                               </div>
                               <div className="w-36 h-36 mx-auto bg-white rounded-xl overflow-hidden mb-3 shadow-lg">
-                                <img src="/acco.jpeg" alt="Accommodation QR Code" className="w-full h-full object-contain" 
+                                <img src={siteContent.registration?.accommodationQrCode || "/acco.jpeg"} alt="Accommodation QR Code" className="w-full h-full object-contain" 
                                   onError={(e) => { e.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iI2ZmZiIvPjx0ZXh0IHg9IjEwMCIgeT0iMTAwIiBmb250LXNpemU9IjE0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5RUjwvdGV4dD48L3N2Zz4='; }} />
                               </div>
                               <p className="text-3xl font-black text-amber-400">₹{totalAmount}</p>

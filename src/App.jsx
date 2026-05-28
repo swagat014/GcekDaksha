@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 import { lazy, Suspense } from "react";
+import { SiteContentProvider } from "./contexts/SiteContentContext";
 
 /* Common Components */
 import Navbar from "./components/Navbar";
@@ -28,7 +29,8 @@ const PageLoader = () => (
 
 function App() {
   return (
-    <Router>
+    <SiteContentProvider>
+      <Router>
       <div
         className="w-full min-h-screen"
         style={{
@@ -116,6 +118,7 @@ function App() {
         </AnimatePresence>
       </div>
     </Router>
+    </SiteContentProvider>
   );
 }
 

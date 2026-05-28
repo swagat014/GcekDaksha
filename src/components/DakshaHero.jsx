@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { motion, useScroll, useTransform, useSpring, AnimatePresence } from 'framer-motion';
+import { useSiteContent } from '../contexts/SiteContentContext';
 
 // Mobile detection hook
 const useIsMobile = () => {
@@ -169,16 +170,24 @@ const FlipCard = ({ value, delay, isSeparator = false }) => {
 // ═══ CALENDAR DATE DISPLAY ═══
 const CalendarDateDisplay = () => {
   const [cycleKey, setCycleKey] = useState(0);
+  const siteContent = useSiteContent();
 
-  const dateItems = [
-    { value: '21st', type: 'date' },
-    { value: 'March', type: 'date' },
-    { value: '2026', type: 'date' },
-    { value: '-', type: 'separator' },
-    { value: '23rd', type: 'date' },
-    { value: 'March', type: 'date' },
-    { value: '2026', type: 'date' },
-  ];
+  const dateItems = (() => {
+    const startParts = (siteContent.heroDates.startDate || "").split(" ").filter(Boolean);
+    const endParts = (siteContent.heroDates.endDate || "").split(" ").filter(Boolean);
+    const toParts = (parts) => [parts[0] || "", parts[1] || "", parts.slice(2).join(" ") || ""];
+    const [sDay, sMonth, sYear] = toParts(startParts);
+    const [eDay, eMonth, eYear] = toParts(endParts);
+    return [
+      { value: sDay, type: "date" },
+      { value: sMonth, type: "date" },
+      { value: sYear, type: "date" },
+      { value: "-", type: "separator" },
+      { value: eDay, type: "date" },
+      { value: eMonth, type: "date" },
+      { value: eYear, type: "date" },
+    ];
+  })();
 
   useEffect(() => {
     const interval = setInterval(() => {

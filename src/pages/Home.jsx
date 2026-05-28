@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { motion, useMotionValue, useScroll, useSpring, AnimatePresence } from 'framer-motion';
 import { Trophy, Users, Calendar, MapPin, Target, Star, Sparkles, Crown, ChevronRight, Medal, Timer, GraduationCap, Rocket, Heart, Eye, Building2, Quote } from 'lucide-react';
+import { useSiteContent } from '../contexts/SiteContentContext';
 
 export default function Home() {
   const mouseX = useMotionValue(0);
@@ -13,6 +14,7 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState('about');
   const [isMobile, setIsMobile] = useState(false);
   const [imgError, setImgError] = useState(false);
+  const siteContent = useSiteContent();
 
   useEffect(() => {
     setIsLoaded(true);
@@ -60,22 +62,13 @@ export default function Home() {
   };
 
   const stats = [
-    { icon: Trophy, value: '9', label: 'Events', color: 'from-amber-400 to-orange-600', bg: 'from-amber-500/10 to-orange-600/10', iconColor: 'text-amber-400' },
-    { icon: Users, value: '800+', label: 'Athletes', color: 'from-cyan-400 to-blue-600', bg: 'from-cyan-500/10 to-blue-600/10', iconColor: 'text-cyan-400' },
-    { icon: Calendar, value: '3 Days', label: 'Duration', color: 'from-violet-400 to-purple-600', bg: 'from-violet-500/10 to-purple-600/10', iconColor: 'text-violet-400' },
-    { icon: MapPin, value: '1', label: 'Arena', color: 'from-rose-400 to-red-600', bg: 'from-rose-500/10 to-red-600/10', iconColor: 'text-rose-400' },
+    { icon: Trophy, value: siteContent.homeStats.events, label: 'Events', color: 'from-amber-400 to-orange-600', bg: 'from-amber-500/10 to-orange-600/10', iconColor: 'text-amber-400' },
+    { icon: Users, value: siteContent.homeStats.athletes, label: 'Athletes', color: 'from-cyan-400 to-blue-600', bg: 'from-cyan-500/10 to-blue-600/10', iconColor: 'text-cyan-400' },
+    { icon: Calendar, value: siteContent.homeStats.duration, label: 'Duration', color: 'from-violet-400 to-purple-600', bg: 'from-violet-500/10 to-purple-600/10', iconColor: 'text-violet-400' },
+    { icon: MapPin, value: siteContent.homeStats.arena, label: 'Arena', color: 'from-rose-400 to-red-600', bg: 'from-rose-500/10 to-red-600/10', iconColor: 'text-rose-400' },
   ];
 
-  const sports = [
-    // { name: "Football", emoji: "⚽", players: "11v11" },
-    { name: "Cricket", emoji: "🏏", players: "11v11" },
-    { name: "Volleyball", emoji: "🏐", players: "6v6" },
-    { name: "Kabaddi", emoji: "🤼", players: "7v7" },
-    { name: "Badminton", emoji: "🏸", players: "Singles/Doubles" },
-    { name: "Chess", emoji: "♟️", players: "1v1" },
-    // { name: "Table Tennis", emoji: "🏓", players: "Singles/Doubles" },
-    { name: "Kho-Kho", emoji: "🏃", players: "12v12" },
-  ];
+  const sports = siteContent.pickYourBattleSports || [];
 
   const tabItems = [
     { id: 'about', label: 'About Us', icon: Heart },
