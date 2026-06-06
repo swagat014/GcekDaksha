@@ -13,6 +13,7 @@ export default function AdminAccommodation() {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
+  const [adminRecord, setAdminRecord] = useState(null);
   
   // Search and filters
   const [search, setSearch] = useState('');
@@ -71,8 +72,20 @@ export default function AdminAccommodation() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       navigate('/admin/login');
+      return;
+    }
+    setUser(user);
+    const { data: profile } = await supabase
+      .from('admins')
+      .select('*')
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    if (!profile) {
+      await supabase.auth.signOut();
+      navigate('/admin/login');
     } else {
-      setUser(user);
+      setAdminRecord(profile);
     }
   };
 
@@ -516,15 +529,17 @@ export default function AdminAccommodation() {
                                 Reject
                               </motion.button>
                             )}
-                            <motion.button
-                              whileHover={{ scale: 1.05 }}
-                              whileTap={{ scale: 0.95 }}
-                              onClick={() => handleDeleteAccommodation(row.id, row.team_name)}
-                              className="p-1.5 bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/30 rounded-lg"
-                              title="Delete Accommodation Booking"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </motion.button>
+                            {adminRecord?.role === 'super_admin' && (
+                              <motion.button
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                onClick={() => handleDeleteAccommodation(row.id, row.team_name)}
+                                className="p-1.5 bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/30 rounded-lg"
+                                title="Delete Accommodation Booking"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </motion.button>
+                            )}
                           </div>
                         </td>
                       </motion.tr>

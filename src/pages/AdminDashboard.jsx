@@ -7,7 +7,7 @@ import {
   Trophy, Users, Building2, Calendar, TrendingUp, Activity, Shield,
   LayoutDashboard, Settings, Search, Filter, Home, LogOut, RefreshCw,
   SlidersHorizontal, Layers, FileEdit, ExternalLink, CreditCard, ChevronRight, CheckCircle2,
-  DollarSign, PieChart, Landmark
+  DollarSign, PieChart, Landmark, Plus
 } from 'lucide-react';
 import SiteContentManager from '../components/SiteContentManager';
 
@@ -15,23 +15,26 @@ export default function AdminDashboard() {
   // Navigation & UI States
   const [activeTab, setActiveTab] = useState('overview');
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  
+
   // Data States
   const [teams, setTeams] = useState([]);
   const [accommodations, setAccommodations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
-  
+  const [adminRecord, setAdminRecord] = useState(null);
+
   // Site Content States
   const [siteContent, setSiteContent] = useState(null);
   const [previewMode, setPreviewMode] = useState(false);
   const [contentLoading, setContentLoading] = useState(true);
-  
+
+
+
   // Filters & Search
   const [regSearch, setRegSearch] = useState('');
   const [regSportFilter, setRegSportFilter] = useState('All');
   const [regStatusFilter, setRegStatusFilter] = useState('All');
-  
+
   const [accSearch, setAccSearch] = useState('');
   const [accSportFilter, setAccSportFilter] = useState('All');
   const [accStatusFilter, setAccStatusFilter] = useState('All');
@@ -92,8 +95,23 @@ export default function AdminDashboard() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       navigate('/admin/login');
+      return;
+    }
+    setUser(user);
+    const { data: profile } = await supabase
+      .from('admins')
+      .select('*')
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    if (!profile) {
+      await supabase.auth.signOut();
+      navigate('/admin/login');
     } else {
-      setUser(user);
+      setAdminRecord(profile);
+      if (profile.role === 'super_admin') {
+        navigate('/admin/super-dashboard');
+      }
     }
   };
 
@@ -160,7 +178,7 @@ export default function AdminDashboard() {
   const getTeamFee = (team) => {
     const sportItem = siteContent?.registration?.sports?.find(s => s.name === team.sport);
     if (sportItem) return Number(sportItem.fee || 0);
-    
+
     // Fallback static map
     const defaultFees = {
       "Volleyball": 3000,
@@ -218,8 +236,8 @@ export default function AdminDashboard() {
           .eq('id', id);
 
         if (error) throw error;
-        setTeams(teams.map(t => t.id === id ? { 
-          ...t, 
+        setTeams(teams.map(t => t.id === id ? {
+          ...t,
           registration_status: 'Approved',
           payment_method: paymentMethod,
           cash_amount: cashAmount,
@@ -239,8 +257,8 @@ export default function AdminDashboard() {
           .eq('id', id);
 
         if (error) throw error;
-        setAccommodations(accommodations.map(a => a.id === id ? { 
-          ...a, 
+        setAccommodations(accommodations.map(a => a.id === id ? {
+          ...a,
           status: 'approved',
           payment_method: paymentMethod,
           cash_amount: cashAmount,
@@ -347,8 +365,8 @@ export default function AdminDashboard() {
 
       const college = collegeName?.toLowerCase().replace(/\s+/g, '_') || '';
       const sportLower = sport?.toLowerCase().replace(/\s+/g, '_') || '';
-      
-      const paymentFile = files.find(file => 
+
+      const paymentFile = files.find(file =>
         file.name.includes(`${college}_${sportLower}_payment`) ||
         file.name.includes('_payment_')
       );
@@ -381,7 +399,7 @@ export default function AdminDashboard() {
 
   // Filter calculations
   const filteredTeams = teams.filter(t => {
-    const matchesSearch = 
+    const matchesSearch =
       (t.team_name || '').toLowerCase().includes(regSearch.toLowerCase()) ||
       (t.college_name || '').toLowerCase().includes(regSearch.toLowerCase()) ||
       (t.captain_name || '').toLowerCase().includes(regSearch.toLowerCase());
@@ -391,12 +409,12 @@ export default function AdminDashboard() {
   });
 
   const filteredAccommodations = accommodations.filter(a => {
-    const matchesSearch = 
+    const matchesSearch =
       (a.team_name || '').toLowerCase().includes(accSearch.toLowerCase()) ||
       (a.college_name || '').toLowerCase().includes(accSearch.toLowerCase()) ||
       (a.captain_name || '').toLowerCase().includes(accSearch.toLowerCase());
     const matchesSport = accSportFilter === 'All' || a.sport === accSportFilter;
-    const matchesStatus = accStatusFilter === 'All' || 
+    const matchesStatus = accStatusFilter === 'All' ||
       (accStatusFilter === 'Approved' && a.status === 'approved') ||
       (accStatusFilter === 'Rejected' && a.status === 'rejected') ||
       (accStatusFilter === 'Pending' && a.status === 'pending');
@@ -419,7 +437,7 @@ export default function AdminDashboard() {
         const fee = getTeamFee(t);
         const cash = Number(t.cash_amount || 0);
         regTotal += fee;
-        
+
         if (t.payment_method === 'Mixed') {
           regCash += cash;
           regUpi += Math.max(0, fee - cash);
@@ -484,7 +502,7 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-[#05050c] text-white flex overflow-hidden font-body">
-      
+
       {/* ================= SIDEBAR NAVIGATION ================= */}
       <AnimatePresence>
         {sidebarOpen && (
@@ -513,7 +531,7 @@ export default function AdminDashboard() {
                 { id: 'overview', label: 'Overview', icon: LayoutDashboard, count: null },
                 { id: 'registrations', label: 'Registrations', icon: Users, count: stats.pendingTeams },
                 { id: 'accommodations', label: 'Hostel Bookings', icon: Home, count: stats.pendingAccRequests },
-                { id: 'content', label: 'Content Studio', icon: FileEdit, count: null },
+                { id: 'content', label: 'Content Studio', icon: FileEdit, count: null }
               ].map(item => {
                 const Icon = item.icon;
                 const active = activeTab === item.id;
@@ -521,11 +539,10 @@ export default function AdminDashboard() {
                   <button
                     key={item.id}
                     onClick={() => setActiveTab(item.id)}
-                    className={`w-full flex items-center justify-between px-4 py-3.5 rounded-xl border text-sm font-semibold transition-all duration-300 ${
-                      active
+                    className={`w-full flex items-center justify-between px-4 py-3.5 rounded-xl border text-sm font-semibold transition-all duration-300 ${active
                         ? 'bg-purple-600/15 border-purple-500/30 text-purple-300 shadow-lg shadow-purple-500/5'
                         : 'bg-transparent border-transparent text-gray-400 hover:text-white hover:bg-white/[0.02]'
-                    }`}
+                      }`}
                   >
                     <div className="flex items-center gap-3">
                       <Icon className={`w-4 h-4 ${active ? 'text-purple-400' : 'text-gray-500'}`} />
@@ -567,7 +584,7 @@ export default function AdminDashboard() {
 
       {/* ================= MAIN CONTENT WRAPPER ================= */}
       <div className="flex-1 flex flex-col h-screen overflow-hidden">
-        
+
         {/* Top frosted Navbar */}
         <header className="h-20 bg-black/20 backdrop-blur-md border-b border-white/[0.06] px-6 flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -607,7 +624,7 @@ export default function AdminDashboard() {
 
         {/* Dynamic Workspace Container */}
         <main className="flex-1 overflow-y-auto p-6 md:p-8 space-y-8">
-          
+
           {/* ================= TAB 1: OVERVIEW DASHBOARD ================= */}
           {activeTab === 'overview' && (
             <motion.div
@@ -618,14 +635,14 @@ export default function AdminDashboard() {
               {/* Premium Treasury Panel */}
               <div className="bg-white/[0.01] border border-white/[0.05] rounded-3xl p-6 md:p-8 relative overflow-hidden shadow-2xl">
                 <div className="absolute top-0 right-0 w-[500px] h-[300px] bg-gradient-to-br from-purple-500/5 via-blue-500/5 to-transparent blur-3xl rounded-full" />
-                
+
                 <h3 className="text-xl font-display font-black text-white tracking-wide mb-6 flex items-center gap-2">
                   <Landmark className="w-5 h-5 text-purple-400" />
                   Financial Treasury Console
                 </h3>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  
+
                   {/* Registrations Treasury */}
                   <div className="p-5 rounded-2xl bg-white/[0.02] border border-white/[0.04]">
                     <div className="flex items-center justify-between border-b border-white/[0.06] pb-3 mb-4">
@@ -952,9 +969,9 @@ export default function AdminDashboard() {
                                   }}
                                   className="px-3 py-1.5 bg-purple-500/15 text-purple-300 border border-purple-500/20 rounded-lg hover:bg-purple-500/30 text-xs font-bold transition-all"
                                 >
-                                  View Dossier
+                                  View Details
                                 </motion.button>
-                                
+
                                 <div className="flex items-center gap-1 border-l border-white/[0.06] pl-2">
                                   {!isApproved && (
                                     <motion.button
@@ -978,15 +995,17 @@ export default function AdminDashboard() {
                                       <X className="w-3.5 h-3.5" />
                                     </motion.button>
                                   )}
-                                  <motion.button
-                                    whileHover={{ scale: 1.1 }}
-                                    whileTap={{ scale: 0.9 }}
-                                    onClick={() => handleDeleteTeam(team.id, team.team_name)}
-                                    className="p-1.5 bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/30 rounded-lg"
-                                    title="Delete Entry"
-                                  >
-                                    <Trash2 className="w-3.5 h-3.5" />
-                                  </motion.button>
+                                  {adminRecord?.role === 'super_admin' && (
+                                    <motion.button
+                                      whileHover={{ scale: 1.1 }}
+                                      whileTap={{ scale: 0.9 }}
+                                      onClick={() => handleDeleteTeam(team.id, team.team_name)}
+                                      className="p-1.5 bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/30 rounded-lg"
+                                      title="Delete Entry"
+                                    >
+                                      <Trash2 className="w-3.5 h-3.5" />
+                                    </motion.button>
+                                  )}
                                 </div>
                               </div>
                             </td>
@@ -1184,15 +1203,17 @@ export default function AdminDashboard() {
                                     Reject
                                   </motion.button>
                                 )}
-                                <motion.button
-                                  whileHover={{ scale: 1.1 }}
-                                  whileTap={{ scale: 0.9 }}
-                                  onClick={() => handleDeleteAccommodation(row.id, row.team_name)}
-                                  className="p-1.5 bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/30 rounded-lg"
-                                  title="Delete Accommodation Booking"
-                                >
-                                  <Trash2 className="w-3.5 h-3.5" />
-                                </motion.button>
+                                {adminRecord?.role === 'super_admin' && (
+                                  <motion.button
+                                    whileHover={{ scale: 1.1 }}
+                                    whileTap={{ scale: 0.9 }}
+                                    onClick={() => handleDeleteAccommodation(row.id, row.team_name)}
+                                    className="p-1.5 bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/30 rounded-lg"
+                                    title="Delete Accommodation Booking"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </motion.button>
+                                )}
                               </div>
                             </td>
                           </motion.tr>
@@ -1306,11 +1327,10 @@ export default function AdminDashboard() {
                               upiAmount: method.id === 'UPI' ? total : 0
                             });
                           }}
-                          className={`py-3 rounded-xl border text-xs font-semibold transition-all ${
-                            active
+                          className={`py-3 rounded-xl border text-xs font-semibold transition-all ${active
                               ? 'bg-purple-600/15 border-purple-500/40 text-purple-300 font-bold'
                               : 'bg-white/[0.02] border-white/[0.06] text-gray-400 hover:text-white hover:bg-white/[0.05]'
-                          }`}
+                            }`}
                         >
                           {method.label}
                         </button>
@@ -1408,7 +1428,7 @@ export default function AdminDashboard() {
 
               {/* Modal contents */}
               <div className="p-8 space-y-8">
-                
+
                 {/* Captain details */}
                 <div className="p-6 rounded-2xl bg-gradient-to-r from-purple-500/5 to-blue-500/5 border border-purple-500/10">
                   <h3 className="text-sm font-bold uppercase text-purple-400 tracking-wider mb-4 flex items-center gap-2">
@@ -1487,7 +1507,7 @@ export default function AdminDashboard() {
                             </p>
                             <p className="text-[10px] text-gray-500 mt-0.5">Player Member #{pIdx + 1}</p>
                           </div>
-                          
+
                           {/* Player Docs */}
                           <div className="flex gap-2">
                             {selectedTeam.players_docs?.filter(doc => doc.name === player.name).map((doc, docIdx) => (
@@ -1621,12 +1641,12 @@ export default function AdminDashboard() {
               onClick={(e) => e.stopPropagation()}
             >
               <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-amber-500/5 to-transparent blur-2xl rounded-full" />
-              
+
               <div className="flex flex-col items-center text-center space-y-4">
                 <div className="w-12 h-12 rounded-full bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
                   <Activity className="w-6 h-6 text-amber-400" />
                 </div>
-                
+
                 <div className="space-y-1.5">
                   <h3 className="text-lg font-bold text-white font-display">{confirmModal.title}</h3>
                   <p className="text-xs text-gray-400 leading-relaxed px-2">{confirmModal.message}</p>
@@ -1676,12 +1696,12 @@ export default function AdminDashboard() {
                 <Activity className="w-4 h-4 text-blue-400" />
               </div>
             )}
-            
+
             <div className="flex-1 min-w-0">
               <p className="text-[9px] text-gray-500 uppercase tracking-widest font-bold font-display">{toast.type === 'success' ? 'Success' : toast.type === 'error' ? 'Failed' : 'Notification'}</p>
               <p className="text-xs font-semibold text-white truncate mt-0.5">{toast.message}</p>
             </div>
-            
+
             <button
               onClick={() => setToast({ ...toast, show: false })}
               className="p-1 bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.04] rounded-lg text-gray-500 hover:text-white"

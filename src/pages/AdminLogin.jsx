@@ -43,7 +43,11 @@ export default function AdminLogin() {
       }
 
       // 3️⃣ Admin verified
-      navigate('/admin/dashboard');
+      if (admin.role === 'super_admin') {
+        navigate('/admin/super-dashboard');
+      } else {
+        navigate('/admin/dashboard');
+      }
     } catch (err) {
       console.error(err);
       setError('Login failed. Try again.');

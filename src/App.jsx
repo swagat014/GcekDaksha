@@ -19,6 +19,7 @@ const AccommodationForm = lazy(() => import("./pages/AccommodationForm"));
 const AdminLogin = lazy(() => import("./pages/AdminLogin"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const AdminAccommodation = lazy(() => import("./pages/AdminAccommodation"));
+const SuperAdminDashboard = lazy(() => import("./pages/SuperAdminDashboard"));
 
 /* Loading Component */
 const PageLoader = () => (
@@ -111,6 +112,16 @@ function App() {
               element={
                 <Suspense fallback={<PageLoader />}>
                   <AdminAccommodation />
+                </Suspense>
+              } 
+            />
+
+            {/* ================= SUPER ADMIN DASHBOARD ================= */}
+            <Route
+              path="/admin/super-dashboard"
+              element={
+                <Suspense fallback={<PageLoader />}>
+                  <SuperAdminDashboard />
                 </Suspense>
               } 
             />
