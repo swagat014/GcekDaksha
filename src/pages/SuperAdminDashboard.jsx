@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../supabaseClient';
 import {
   X, User, Phone, Trophy, Users, Building2, Calendar, Activity, Shield,
-  LayoutDashboard, Search, Filter, Home, LogOut, RefreshCw,
+  LayoutDashboard, Search, Filter, Home, LogOut, RefreshCw, Menu,
   FileEdit, ExternalLink, CreditCard, ChevronRight, CheckCircle2,
   Trash2, Plus, AlertCircle, Eye, EyeOff, Key, FileText
 } from 'lucide-react';
@@ -379,15 +379,15 @@ export default function SuperAdminDashboard() {
   return (
     <div className="min-h-screen bg-[#04010a] text-white flex overflow-hidden font-body relative">
       <div className="absolute inset-0 bg-gradient-to-tr from-purple-900/10 via-transparent to-rose-900/5 pointer-events-none" />
-      
-      {/* ================= SIDEBAR ================= */}
+
+      {/* ================= SIDEBAR — Desktop only ================= */}
       <AnimatePresence>
         {sidebarOpen && (
           <motion.div
             initial={{ width: 0, opacity: 0 }}
             animate={{ width: 280, opacity: 1 }}
             exit={{ width: 0, opacity: 0 }}
-            className="h-screen bg-black/40 backdrop-blur-2xl border-r border-white/[0.04] flex flex-col flex-shrink-0 z-30 relative overflow-hidden"
+            className="hidden md:flex h-screen bg-black/40 backdrop-blur-2xl border-r border-white/[0.04] flex-col flex-shrink-0 z-30 overflow-hidden"
           >
             {/* Logo */}
             <div className="p-6 border-b border-white/[0.04] flex items-center gap-3">
@@ -415,7 +415,7 @@ export default function SuperAdminDashboard() {
                   <button
                     key={item.id}
                     onClick={() => setActiveTab(item.id)}
-                    className={`w-full flex items-center gap-3.5 px-4.5 py-3.5 rounded-xl border text-sm font-bold transition-all duration-300 ${
+                    className={`w-full flex items-center gap-3.5 px-4 py-3.5 rounded-xl border text-sm font-bold transition-all duration-300 ${
                       active
                         ? 'bg-rose-500/10 border-rose-500/20 text-rose-300 shadow-lg shadow-rose-500/5'
                         : 'bg-transparent border-transparent text-gray-400 hover:text-white hover:bg-white/[0.02]'
@@ -454,38 +454,58 @@ export default function SuperAdminDashboard() {
 
       {/* ================= MAIN CONTAINER ================= */}
       <div className="flex-1 flex flex-col h-screen overflow-hidden">
-        
+
         {/* Header */}
-        <header className="h-20 bg-black/10 backdrop-blur-md border-b border-white/[0.04] px-6 flex items-center justify-between z-10">
-          <div className="flex items-center gap-4">
+        <header className="bg-[#07040d]/90 backdrop-blur-md border-b border-white/[0.06] px-4 sm:px-6 flex items-center justify-between z-10 gap-2 h-16 md:h-20">
+          {/* Left: Logo on mobile | Sidebar toggle on desktop */}
+          <div className="flex items-center gap-3 min-w-0">
+            {/* Desktop sidebar toggle */}
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="p-2.5 bg-white/[0.02] hover:bg-white/[0.04] border border-white/[0.06] rounded-xl text-gray-400 hover:text-white transition-all"
+              className="hidden md:flex p-2.5 bg-white/[0.02] hover:bg-white/[0.04] border border-white/[0.06] rounded-xl text-gray-400 hover:text-white transition-all flex-shrink-0 items-center justify-center"
             >
-              <Shield className="w-4.5 h-4.5 text-rose-400" />
+              <Menu className="w-4 h-4 text-rose-400" />
             </button>
-            <div>
-              <h2 className="text-base font-black tracking-wide uppercase text-white">
-                {activeTab === 'admins' ? 'Administrators Management' : activeTab === 'registrations' ? 'Sports Teams Records' : 'Accommodation Requests'}
+            {/* Mobile: DAKSHA logo */}
+            <div className="flex items-center gap-2 md:hidden">
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-rose-500/30 to-purple-500/20 border border-rose-400/25 flex items-center justify-center">
+                <Shield className="w-4 h-4 text-rose-400" />
+              </div>
+              <div>
+                <h1 className="text-sm font-black tracking-widest bg-clip-text text-transparent bg-gradient-to-r from-rose-300 to-purple-300">DAKSHA</h1>
+                <p className="text-[8px] text-rose-400/60 font-semibold tracking-widest uppercase -mt-0.5">Super Admin</p>
+              </div>
+            </div>
+            {/* Desktop page title */}
+            <div className="hidden md:block min-w-0">
+              <h2 className="text-base font-black tracking-wide uppercase text-white truncate">
+                {activeTab === 'admins' ? 'Admin Management' : activeTab === 'registrations' ? 'Sports Registrations' : 'Accommodation Requests'}
               </h2>
               <p className="text-[10px] text-gray-500 uppercase tracking-widest">Daksha Control Deck</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          {/* Right: Page title on mobile + Reload */}
+          <div className="flex items-center gap-2 flex-shrink-0">
+            {/* Mobile: current tab label */}
+            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider md:hidden">
+              {activeTab === 'admins' ? 'Admins' : activeTab === 'registrations' ? 'Teams' : 'Hostel'}
+            </span>
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={fetchData}
-              className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-xl transition-all flex items-center gap-2 shadow-lg shadow-rose-500/10 border border-rose-500/30"
+              className="p-2 sm:px-4 sm:py-2 bg-rose-600/80 hover:bg-rose-600 text-white text-xs font-bold rounded-xl transition-all flex items-center gap-2 shadow-lg shadow-rose-500/10 border border-rose-500/30"
+              title="Reload Data"
             >
-              <RefreshCw className="w-3.5 h-3.5" /> Reload Data
+              <RefreshCw className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Reload</span>
             </motion.button>
           </div>
         </header>
 
         {/* Console Workspace */}
-        <main className="flex-1 overflow-y-auto p-6 space-y-6">
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 pb-28 md:pb-6 space-y-5">
 
           {/* ================= TAB 1: ADMINS MANAGEMENT ================= */}
           {activeTab === 'admins' && (
@@ -495,14 +515,14 @@ export default function SuperAdminDashboard() {
               className="space-y-6"
             >
               {/* Toolbar */}
-              <div className="bg-white/[0.01] border border-white/[0.04] p-5 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="bg-white/[0.01] border border-white/[0.04] p-4 sm:p-5 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                  <h3 className="text-base font-bold text-white">Console Operators</h3>
-                  <p className="text-gray-500 text-xs mt-0.5">Below are the credentials of staff allowed to approve/reject entries.</p>
+                  <h3 className="text-sm sm:text-base font-bold text-white">Console Operators</h3>
+                  <p className="text-gray-500 text-[11px] sm:text-xs mt-0.5">Below are the credentials of staff allowed to approve/reject entries.</p>
                 </div>
                 <button
                   onClick={() => setShowAddAdminModal(true)}
-                  className="px-4 py-2 bg-gradient-to-r from-rose-600 to-purple-600 hover:from-rose-700 hover:to-purple-700 text-white text-xs font-bold rounded-xl transition-all flex items-center gap-2 shadow-md"
+                  className="w-full sm:w-auto px-4 py-2.5 sm:py-2 bg-gradient-to-r from-rose-600 to-purple-600 hover:from-rose-700 hover:to-purple-700 text-white text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-2 shadow-md"
                 >
                   <Plus className="w-3.5 h-3.5" /> Register Staff Profile
                 </button>
@@ -565,7 +585,7 @@ export default function SuperAdminDashboard() {
                             setSelectedAdminForPassword(adm);
                             setShowChangePasswordModal(true);
                           }}
-                          className="flex-1 py-2 bg-white/[0.02] hover:bg-white/[0.06] border border-white/[0.05] rounded-xl text-xs font-bold text-gray-300 hover:text-white transition-all text-center flex items-center justify-center gap-1.5"
+                          className="flex-1 py-2 bg-white/[0.02] hover:bg-white/[0.06] border border-white/[0.05] rounded-xl text-xs font-bold text-gray-300 hover:text-white transition-all text-center flex items-center justify-center gap-1.5 min-h-[44px]"
                         >
                           <Key className="w-3 h-3 text-purple-400" /> Password
                         </button>
@@ -573,7 +593,7 @@ export default function SuperAdminDashboard() {
                         {!selfAccount && (
                           <button
                             onClick={() => handleDeleteAdmin(adm.user_id, adm.name)}
-                            className="py-2 px-3.5 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 rounded-xl text-xs font-bold text-rose-400 hover:text-rose-300 transition-all flex items-center justify-center"
+                            className="py-2 px-3.5 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 rounded-xl text-xs font-bold text-rose-400 hover:text-rose-300 transition-all flex items-center justify-center min-h-[44px]"
                             title="Delete Admin Account"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -595,24 +615,24 @@ export default function SuperAdminDashboard() {
               className="space-y-6"
             >
               {/* Search Toolbar */}
-              <div className="bg-white/[0.01] border border-white/[0.04] p-5 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div className="relative max-w-md w-full">
+              <div className="bg-white/[0.01] border border-white/[0.04] p-4 rounded-2xl flex flex-col gap-3">
+                <div className="relative w-full">
                   <Search className="w-4 h-4 text-gray-500 absolute top-1/2 left-4 -translate-y-1/2" />
                   <input
                     type="text"
                     value={regSearch}
                     onChange={(e) => setRegSearch(e.target.value)}
-                    placeholder="Search teams by name, college, captain..."
-                    className="w-full pl-11 pr-4 py-2.5 bg-white/[0.02] border border-white/[0.06] rounded-xl text-xs placeholder-gray-500 focus:outline-none focus:border-rose-500/40 text-white"
+                    placeholder="Search teams, college, captain..."
+                    className="w-full pl-11 pr-4 py-3 bg-white/[0.02] border border-white/[0.06] rounded-xl text-xs placeholder-gray-500 focus:outline-none focus:border-purple-500/40 text-white"
                   />
                 </div>
-
-                <div className="flex items-center gap-3">
-                  <div className="relative">
+                <div className="flex items-center gap-2">
+                  <Filter className="w-3.5 h-3.5 text-gray-500 flex-shrink-0" />
+                  <div className="relative flex-1">
                     <select
                       value={regSportFilter}
                       onChange={(e) => setRegSportFilter(e.target.value)}
-                      className="px-4 py-2.5 pr-10 bg-white/[0.02] border border-white/[0.06] rounded-xl text-xs text-white appearance-none cursor-pointer focus:outline-none"
+                      className="w-full px-3 py-2.5 pr-9 bg-white/[0.02] border border-white/[0.06] rounded-xl text-xs text-white appearance-none cursor-pointer focus:outline-none focus:border-purple-500/40"
                     >
                       <option value="All" className="bg-[#0f0518]">All Sports</option>
                       {allSports.map(s => (
@@ -621,12 +641,16 @@ export default function SuperAdminDashboard() {
                     </select>
                     <ChevronRight className="w-3.5 h-3.5 text-gray-500 rotate-90 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                   </div>
+                  <span className="text-[10px] text-gray-500 font-mono flex-shrink-0 bg-white/[0.03] px-2 py-1.5 rounded-lg border border-white/[0.04]">
+                    {filteredTeams.length} results
+                  </span>
                 </div>
               </div>
 
               {/* Data Table */}
               <div className="bg-white/[0.01] border border-white/[0.04] rounded-2xl overflow-hidden shadow-xl">
-                <div className="overflow-x-auto">
+                {/* Desktop Table View */}
+                <div className="hidden md:block overflow-x-auto">
                   <table className="w-full text-left border-collapse">
                     <thead>
                       <tr className="bg-white/[0.02] border-b border-white/[0.04] text-[10px] font-bold text-rose-300 uppercase tracking-widest">
@@ -686,13 +710,93 @@ export default function SuperAdminDashboard() {
                       ))}
                     </tbody>
                   </table>
-                  {filteredTeams.length === 0 && (
-                    <div className="text-center py-16 text-gray-500">
-                      <Trophy className="w-12 h-12 mx-auto text-gray-700 mb-3" />
-                      <p>No registration records match your filter.</p>
-                    </div>
-                  )}
                 </div>
+
+                {/* Mobile Card Layout - Registrations */}
+                <div className="block md:hidden divide-y divide-white/[0.03]">
+                  {filteredTeams.map((team, index) => (
+                    <motion.div
+                      key={team.id}
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.04 }}
+                      className="p-4 hover:bg-white/[0.01] transition-colors"
+                    >
+                      {/* Card Header */}
+                      <div className="flex items-start gap-3 mb-3">
+                        {/* Sport Color Dot */}
+                        <div className="w-9 h-9 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                          <Trophy className="w-4 h-4 text-purple-400" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="min-w-0">
+                              <h4 className="text-sm font-black text-white leading-tight">{team.team_name}</h4>
+                              <p className="text-[10px] text-gray-400 mt-0.5 truncate">{team.college_name}</p>
+                            </div>
+                            <span className={`flex-shrink-0 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider border ${
+                              team.registration_status === 'Approved'
+                                ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                                : team.registration_status === 'Rejected'
+                                  ? 'bg-rose-500/10 text-rose-400 border-rose-500/20'
+                                  : 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                            }`}>
+                              {team.registration_status === 'Approved' ? '✓ Approved' : team.registration_status === 'Rejected' ? '✗ Rejected' : '⏳ Pending'}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Info Grid */}
+                      <div className="grid grid-cols-2 gap-2 mb-3 ml-12">
+                        <div className="bg-white/[0.02] rounded-xl p-2.5 border border-white/[0.03]">
+                          <p className="text-[8px] text-gray-600 uppercase tracking-wider font-bold mb-0.5">Sport</p>
+                          <p className="text-[11px] font-bold text-purple-300">{team.sport || '—'}</p>
+                        </div>
+                        <div className="bg-white/[0.02] rounded-xl p-2.5 border border-white/[0.03]">
+                          <p className="text-[8px] text-gray-600 uppercase tracking-wider font-bold mb-0.5">Captain</p>
+                          <p className="text-[11px] font-bold text-gray-200 truncate">{team.captain_name || '—'}</p>
+                        </div>
+                        <div className="bg-white/[0.02] rounded-xl p-2.5 border border-white/[0.03] col-span-2">
+                          <p className="text-[8px] text-gray-600 uppercase tracking-wider font-bold mb-0.5">Contact</p>
+                          <p className="text-[11px] font-mono font-bold text-rose-300">{team.captain_mobile || '—'}</p>
+                        </div>
+                      </div>
+
+                      {/* Action Buttons */}
+                      <div className="flex gap-2 ml-12">
+                        <button
+                          onClick={async () => {
+                            let paymentUrl = team.payment_screenshot_url;
+                            if (!paymentUrl) {
+                              paymentUrl = await fetchPaymentScreenshot(team.college_name, team.sport);
+                            }
+                            setPaymentScreenshotUrl(paymentUrl);
+                            setSelectedTeam(team);
+                            setViewTeamMode(true);
+                          }}
+                          className="flex-1 py-2.5 bg-purple-500/10 hover:bg-purple-500/20 active:scale-[0.98] border border-purple-500/20 text-purple-300 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5"
+                        >
+                          <Eye className="w-3.5 h-3.5" /> View Details
+                        </button>
+                        <button
+                          onClick={() => handleDeleteTeam(team.id, team.team_name)}
+                          className="py-2.5 px-4 bg-rose-500/5 hover:bg-rose-500/15 active:scale-[0.98] border border-rose-500/15 rounded-xl text-rose-400 hover:text-rose-300 transition-all flex items-center justify-center gap-1.5"
+                          title="Delete Record"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+
+                {filteredTeams.length === 0 && (
+                  <div className="text-center py-16 text-gray-500">
+                    <Trophy className="w-12 h-12 mx-auto text-gray-700 mb-3" />
+                    <p className="text-sm">No registration records match your filter.</p>
+                  </div>
+                )}
               </div>
             </motion.div>
           )}
@@ -705,24 +809,24 @@ export default function SuperAdminDashboard() {
               className="space-y-6"
             >
               {/* Search Toolbar */}
-              <div className="bg-white/[0.01] border border-white/[0.04] p-5 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div className="relative max-w-md w-full">
+              <div className="bg-white/[0.01] border border-white/[0.04] p-4 rounded-2xl flex flex-col gap-3">
+                <div className="relative w-full">
                   <Search className="w-4 h-4 text-gray-500 absolute top-1/2 left-4 -translate-y-1/2" />
                   <input
                     type="text"
                     value={accSearch}
                     onChange={(e) => setAccSearch(e.target.value)}
-                    placeholder="Search bookings by team, college, captain..."
-                    className="w-full pl-11 pr-4 py-2.5 bg-white/[0.02] border border-white/[0.06] rounded-xl text-xs placeholder-gray-500 focus:outline-none focus:border-rose-500/40 text-white"
+                    placeholder="Search by team, college, captain..."
+                    className="w-full pl-11 pr-4 py-3 bg-white/[0.02] border border-white/[0.06] rounded-xl text-xs placeholder-gray-500 focus:outline-none focus:border-blue-500/40 text-white"
                   />
                 </div>
-
-                <div className="flex items-center gap-3">
-                  <div className="relative">
+                <div className="flex items-center gap-2">
+                  <Filter className="w-3.5 h-3.5 text-gray-500 flex-shrink-0" />
+                  <div className="relative flex-1">
                     <select
                       value={accSportFilter}
                       onChange={(e) => setAccSportFilter(e.target.value)}
-                      className="px-4 py-2.5 pr-10 bg-white/[0.02] border border-white/[0.06] rounded-xl text-xs text-white appearance-none cursor-pointer focus:outline-none"
+                      className="w-full px-3 py-2.5 pr-9 bg-white/[0.02] border border-white/[0.06] rounded-xl text-xs text-white appearance-none cursor-pointer focus:outline-none focus:border-blue-500/40"
                     >
                       <option value="All" className="bg-[#0f0518]">All Sports</option>
                       {allSports.map(s => (
@@ -731,12 +835,16 @@ export default function SuperAdminDashboard() {
                     </select>
                     <ChevronRight className="w-3.5 h-3.5 text-gray-500 rotate-90 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                   </div>
+                  <span className="text-[10px] text-gray-500 font-mono flex-shrink-0 bg-white/[0.03] px-2 py-1.5 rounded-lg border border-white/[0.04]">
+                    {filteredAccommodations.length} results
+                  </span>
                 </div>
               </div>
 
               {/* Data Table */}
               <div className="bg-white/[0.01] border border-white/[0.04] rounded-2xl overflow-hidden shadow-xl">
-                <div className="overflow-x-auto">
+                {/* Desktop Table View */}
+                <div className="hidden md:block overflow-x-auto">
                   <table className="w-full text-left border-collapse">
                     <thead>
                       <tr className="bg-white/[0.02] border-b border-white/[0.04] text-[10px] font-bold text-rose-300 uppercase tracking-widest">
@@ -804,18 +912,169 @@ export default function SuperAdminDashboard() {
                       })}
                     </tbody>
                   </table>
-                  {filteredAccommodations.length === 0 && (
-                    <div className="text-center py-16 text-gray-500">
-                      <Home className="w-12 h-12 mx-auto text-gray-700 mb-3" />
-                      <p>No accommodation requests match your search.</p>
-                    </div>
-                  )}
                 </div>
+
+                {/* Mobile Card Layout - Accommodations */}
+                <div className="block md:hidden divide-y divide-white/[0.03]">
+                  {filteredAccommodations.map((row, index) => {
+                    const screenshotUrl = getPaymentScreenshotUrl(row.payment_screenshot_url);
+                    const isApproved = row.status === 'approved';
+                    return (
+                      <motion.div
+                        key={row.id}
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.04 }}
+                        className="p-4 hover:bg-white/[0.01] transition-colors"
+                      >
+                        {/* Card Header */}
+                        <div className="flex items-start gap-3 mb-3">
+                          <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5 ${
+                            isApproved ? 'bg-emerald-500/10 border border-emerald-500/20' : 'bg-amber-500/10 border border-amber-500/20'
+                          }`}>
+                            <Home className={`w-4 h-4 ${isApproved ? 'text-emerald-400' : 'text-amber-400'}`} />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="min-w-0">
+                                <h4 className="text-sm font-black text-white leading-tight">{row.team_name}</h4>
+                                <p className="text-[10px] text-gray-400 mt-0.5 truncate">{row.college_name}</p>
+                              </div>
+                              <span className={`flex-shrink-0 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider border ${
+                                isApproved
+                                  ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                                  : 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                              }`}>
+                                {isApproved ? '✓ Approved' : '⏳ Pending'}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Info Grid */}
+                        <div className="grid grid-cols-2 gap-2 mb-3 ml-12">
+                          <div className="bg-white/[0.02] rounded-xl p-2.5 border border-white/[0.03]">
+                            <p className="text-[8px] text-gray-600 uppercase tracking-wider font-bold mb-0.5">Captain</p>
+                            <p className="text-[11px] font-bold text-gray-200 truncate">{row.captain_name || '—'}</p>
+                          </div>
+                          <div className="bg-white/[0.02] rounded-xl p-2.5 border border-white/[0.03]">
+                            <p className="text-[8px] text-gray-600 uppercase tracking-wider font-bold mb-0.5">Persons</p>
+                            <button
+                              onClick={() => setSelectedPlayersModal({ show: true, players: row.selected_players || [] })}
+                              className="text-[11px] font-black text-blue-300 flex items-center gap-1 hover:text-blue-200 transition-colors"
+                            >
+                              <Users className="w-3 h-3" />
+                              {row.total_persons} people
+                            </button>
+                          </div>
+                          <div className="bg-white/[0.02] rounded-xl p-2.5 border border-white/[0.03] col-span-2">
+                            <p className="text-[8px] text-gray-600 uppercase tracking-wider font-bold mb-0.5">UTR / Transaction No.</p>
+                            <p className="text-[11px] font-mono font-bold text-rose-300 flex items-center gap-1">
+                              <CreditCard className="w-3 h-3 text-gray-500" />
+                              {row.utr_number || 'Not provided'}
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div className="flex gap-2 ml-12">
+                          {screenshotUrl ? (
+                            <button
+                              onClick={() => setLightboxUrl(screenshotUrl)}
+                              className="flex-1 py-2.5 bg-blue-500/10 hover:bg-blue-500/20 active:scale-[0.98] border border-blue-500/20 text-blue-300 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5"
+                            >
+                              <Eye className="w-3.5 h-3.5" /> View Receipt
+                            </button>
+                          ) : (
+                            <div className="flex-1 py-2.5 bg-white/[0.01] border border-white/[0.03] text-gray-600 text-[10px] rounded-xl flex items-center justify-center">
+                              No Receipt
+                            </div>
+                          )}
+                          <button
+                            onClick={() => handleDeleteAccommodation(row.id, row.team_name)}
+                            className="py-2.5 px-4 bg-rose-500/5 hover:bg-rose-500/15 active:scale-[0.98] border border-rose-500/15 rounded-xl text-rose-400 hover:text-rose-300 transition-all flex items-center justify-center"
+                            title="Delete"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+
+                {filteredAccommodations.length === 0 && (
+                  <div className="text-center py-16 text-gray-500">
+                    <Home className="w-12 h-12 mx-auto text-gray-700 mb-3" />
+                    <p className="text-sm">No accommodation requests match your search.</p>
+                  </div>
+                )}
               </div>
             </motion.div>
           )}
 
         </main>
+
+        {/* ===== MOBILE BOTTOM NAVIGATION BAR ===== */}
+        <nav className="fixed bottom-0 left-0 right-0 md:hidden z-40">
+          {/* Blur + gradient background */}
+          <div className="absolute inset-0 bg-[#07040d]/95 backdrop-blur-xl border-t border-white/[0.08]" />
+          <div className="relative flex items-center justify-around px-2 py-1 safe-area-inset-bottom">
+            {/* Admin tab */}
+            <button
+              onClick={() => setActiveTab('admins')}
+              className={`flex flex-col items-center gap-0.5 px-4 py-2.5 rounded-2xl transition-all duration-200 min-w-[60px] ${
+                activeTab === 'admins'
+                  ? 'bg-rose-500/15 text-rose-400'
+                  : 'text-gray-500 hover:text-gray-300'
+              }`}
+            >
+              <Shield className={`w-5 h-5 transition-transform duration-200 ${activeTab === 'admins' ? 'scale-110' : ''}`} />
+              <span className="text-[9px] font-bold tracking-wider uppercase">Admins</span>
+              {activeTab === 'admins' && <span className="w-1 h-1 bg-rose-400 rounded-full" />}
+            </button>
+
+            {/* Registrations tab */}
+            <button
+              onClick={() => setActiveTab('registrations')}
+              className={`flex flex-col items-center gap-0.5 px-4 py-2.5 rounded-2xl transition-all duration-200 min-w-[60px] ${
+                activeTab === 'registrations'
+                  ? 'bg-purple-500/15 text-purple-400'
+                  : 'text-gray-500 hover:text-gray-300'
+              }`}
+            >
+              <Users className={`w-5 h-5 transition-transform duration-200 ${activeTab === 'registrations' ? 'scale-110' : ''}`} />
+              <span className="text-[9px] font-bold tracking-wider uppercase">Teams</span>
+              {activeTab === 'registrations' && <span className="w-1 h-1 bg-purple-400 rounded-full" />}
+            </button>
+
+            {/* Hostel tab */}
+            <button
+              onClick={() => setActiveTab('accommodations')}
+              className={`flex flex-col items-center gap-0.5 px-4 py-2.5 rounded-2xl transition-all duration-200 min-w-[60px] ${
+                activeTab === 'accommodations'
+                  ? 'bg-blue-500/15 text-blue-400'
+                  : 'text-gray-500 hover:text-gray-300'
+              }`}
+            >
+              <Home className={`w-5 h-5 transition-transform duration-200 ${activeTab === 'accommodations' ? 'scale-110' : ''}`} />
+              <span className="text-[9px] font-bold tracking-wider uppercase">Hostel</span>
+              {activeTab === 'accommodations' && <span className="w-1 h-1 bg-blue-400 rounded-full" />}
+            </button>
+
+            {/* Divider */}
+            <div className="w-px h-8 bg-white/[0.06] mx-1" />
+
+            {/* Logout */}
+            <button
+              onClick={handleLogout}
+              className="flex flex-col items-center gap-0.5 px-3 py-2.5 rounded-2xl transition-all duration-200 text-gray-500 hover:text-rose-400 hover:bg-rose-500/10 min-w-[52px]"
+            >
+              <LogOut className="w-5 h-5" />
+              <span className="text-[9px] font-bold tracking-wider uppercase">Exit</span>
+            </button>
+          </div>
+        </nav>
       </div>
 
       {/* ================= REGISTER NEW ADMIN USER MODAL ================= */}

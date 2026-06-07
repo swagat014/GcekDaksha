@@ -7,7 +7,7 @@ import {
   Trophy, Users, Building2, Calendar, TrendingUp, Activity, Shield,
   LayoutDashboard, Settings, Search, Filter, Home, LogOut, RefreshCw,
   SlidersHorizontal, Layers, FileEdit, ExternalLink, CreditCard, ChevronRight, CheckCircle2,
-  DollarSign, PieChart, Landmark, Plus
+  DollarSign, PieChart, Landmark, Plus, Menu
 } from 'lucide-react';
 import SiteContentManager from '../components/SiteContentManager';
 
@@ -510,7 +510,7 @@ export default function AdminDashboard() {
             initial={{ width: 0, opacity: 0 }}
             animate={{ width: 280, opacity: 1 }}
             exit={{ width: 0, opacity: 0 }}
-            className="h-screen bg-black/40 backdrop-blur-2xl border-r border-white/[0.06] flex flex-col flex-shrink-0 z-30 relative overflow-hidden"
+            className="hidden md:flex h-screen bg-black/40 backdrop-blur-2xl border-r border-white/[0.06] flex-col flex-shrink-0 z-30 relative overflow-hidden"
           >
             {/* Header Brand */}
             <div className="p-6 border-b border-white/[0.06] flex items-center gap-3">
@@ -586,35 +586,57 @@ export default function AdminDashboard() {
       <div className="flex-1 flex flex-col h-screen overflow-hidden">
 
         {/* Top frosted Navbar */}
-        <header className="h-20 bg-black/20 backdrop-blur-md border-b border-white/[0.06] px-6 flex items-center justify-between">
-          <div className="flex items-center gap-4">
+        <header className="bg-black/20 backdrop-blur-md border-b border-white/[0.06] px-4 sm:px-6 flex items-center justify-between z-10 gap-2 h-16 md:h-20">
+          {/* Left: Logo on mobile | Sidebar toggle on desktop */}
+          <div className="flex items-center gap-3 min-w-0">
+            {/* Desktop sidebar toggle */}
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="p-2 bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.08] rounded-xl text-gray-400 hover:text-white transition-all"
+              className="hidden md:flex p-2.5 bg-white/[0.02] hover:bg-white/[0.04] border border-white/[0.06] rounded-xl text-gray-400 hover:text-white transition-all flex-shrink-0 items-center justify-center"
               title="Toggle Sidebar"
             >
-              <SlidersHorizontal className="w-4 h-4" />
+              <SlidersHorizontal className="w-4 h-4 text-purple-400" />
             </button>
-            <div>
-              <h2 className="text-lg font-bold text-white capitalize">{activeTab === 'overview' ? 'Dashboard Overview' : activeTab}</h2>
-              <p className="text-xs text-gray-400">GCEK Daksha management system</p>
+            {/* Mobile: DAKSHA logo */}
+            <div className="flex items-center gap-2 md:hidden">
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-purple-500/30 to-blue-500/20 border border-purple-400/25 flex items-center justify-center">
+                <Trophy className="w-4 h-4 text-purple-400" />
+              </div>
+              <div>
+                <h1 className="text-sm font-black tracking-widest bg-clip-text text-transparent bg-gradient-to-r from-purple-300 to-blue-300">DAKSHA</h1>
+                <p className="text-[8px] text-purple-400/60 font-semibold tracking-widest uppercase -mt-0.5">Admin Console</p>
+              </div>
+            </div>
+            {/* Desktop page title */}
+            <div className="hidden md:block min-w-0">
+              <h2 className="text-base font-black tracking-wide uppercase text-white truncate">
+                {activeTab === 'overview' ? 'Dashboard Overview' : activeTab === 'registrations' ? 'Team Registrations' : activeTab === 'accommodations' ? 'Hostel Bookings' : 'Website Content Studio'}
+              </h2>
+              <p className="text-[10px] text-gray-500 uppercase tracking-widest">GCEK Daksha Management System</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          {/* Right: Page title on mobile + Sync/External Links */}
+          <div className="flex items-center gap-2 flex-shrink-0">
+            {/* Mobile: current tab label */}
+            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider md:hidden mr-1">
+              {activeTab === 'overview' ? 'Overview' : activeTab === 'registrations' ? 'Teams' : activeTab === 'accommodations' ? 'Hostel' : 'Content'}
+            </span>
             <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
               onClick={handleRefresh}
-              className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold rounded-xl transition-all flex items-center gap-2 shadow-lg shadow-purple-500/10 border border-purple-500/30"
+              className="p-2 sm:px-4 sm:py-2 bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold rounded-xl transition-all flex items-center gap-2 shadow-lg shadow-purple-500/10 border border-purple-500/30"
+              title="Synchronize Data"
             >
-              <RefreshCw className="w-3.5 h-3.5" /> Synchronize Data
+              <RefreshCw className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Sync Data</span>
             </motion.button>
             <a
               href="/"
               target="_blank"
               rel="noopener noreferrer"
-              className="p-2 bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.08] rounded-xl text-gray-400 hover:text-white transition-all"
+              className="p-2 bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.08] rounded-xl text-gray-400 hover:text-white transition-all flex items-center justify-center"
               title="Open Website"
             >
               <ExternalLink className="w-4 h-4" />
@@ -623,7 +645,7 @@ export default function AdminDashboard() {
         </header>
 
         {/* Dynamic Workspace Container */}
-        <main className="flex-1 overflow-y-auto p-6 md:p-8 space-y-8">
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8 pb-28 md:pb-8 space-y-8">
 
           {/* ================= TAB 1: OVERVIEW DASHBOARD ================= */}
           {activeTab === 'overview' && (
@@ -828,8 +850,8 @@ export default function AdminDashboard() {
               className="space-y-6"
             >
               {/* Advanced Filter Toolbar */}
-              <div className="bg-white/[0.01] border border-white/[0.05] p-5 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div className="relative max-w-md w-full">
+              <div className="bg-white/[0.01] border border-white/[0.05] p-4 rounded-2xl flex flex-col gap-3 md:flex-row md:items-center md:justify-between md:gap-4">
+                <div className="relative w-full md:max-w-md">
                   <Search className="w-4 h-4 text-gray-500 absolute top-1/2 left-4 -translate-y-1/2" />
                   <input
                     type="text"
@@ -840,13 +862,14 @@ export default function AdminDashboard() {
                   />
                 </div>
 
-                <div className="flex flex-wrap items-center gap-3">
+                <div className="flex flex-wrap items-center gap-2">
+                  <Filter className="w-3.5 h-3.5 text-gray-500 flex-shrink-0" />
                   {/* Sport Filter */}
-                  <div className="relative">
+                  <div className="relative flex-1 sm:flex-initial">
                     <select
                       value={regSportFilter}
                       onChange={(e) => setRegSportFilter(e.target.value)}
-                      className="px-4 py-3 pr-10 bg-white/[0.02] border border-white/[0.06] rounded-xl text-xs text-white appearance-none cursor-pointer focus:outline-none focus:border-purple-500/40 hover:border-white/10"
+                      className="w-full px-4 py-2.5 pr-10 bg-white/[0.02] border border-white/[0.06] rounded-xl text-xs text-white appearance-none cursor-pointer focus:outline-none focus:border-purple-500/40 hover:border-white/10"
                     >
                       <option value="All" className="bg-[#0f0518]">All Sports</option>
                       {allSports.map(s => (
@@ -857,11 +880,11 @@ export default function AdminDashboard() {
                   </div>
 
                   {/* Status Filter */}
-                  <div className="relative">
+                  <div className="relative flex-1 sm:flex-initial">
                     <select
                       value={regStatusFilter}
                       onChange={(e) => setRegStatusFilter(e.target.value)}
-                      className="px-4 py-3 pr-10 bg-white/[0.02] border border-white/[0.06] rounded-xl text-xs text-white appearance-none cursor-pointer focus:outline-none focus:border-purple-500/40 hover:border-white/10"
+                      className="w-full px-4 py-2.5 pr-10 bg-white/[0.02] border border-white/[0.06] rounded-xl text-xs text-white appearance-none cursor-pointer focus:outline-none focus:border-purple-500/40 hover:border-white/10"
                     >
                       <option value="All" className="bg-[#0f0518]">All Statuses</option>
                       <option value="Pending" className="bg-[#0f0518]">Pending</option>
@@ -870,11 +893,15 @@ export default function AdminDashboard() {
                     </select>
                     <ChevronRight className="w-3.5 h-3.5 text-gray-500 rotate-90 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                   </div>
+
+                  <span className="text-[10px] text-gray-500 font-mono flex-shrink-0 bg-white/[0.03] px-2.5 py-2 rounded-xl border border-white/[0.04]">
+                    {filteredTeams.length} results
+                  </span>
                 </div>
               </div>
 
-              {/* Table Wrapper */}
-              <div className="bg-white/[0.01] border border-white/[0.05] rounded-3xl overflow-hidden shadow-2xl">
+              {/* Desktop Table View */}
+              <div className="hidden md:block bg-white/[0.01] border border-white/[0.05] rounded-3xl overflow-hidden shadow-2xl">
                 <div className="overflow-x-auto">
                   <table className="w-full min-w-[900px] border-collapse text-left">
                     <thead>
@@ -1022,10 +1049,145 @@ export default function AdminDashboard() {
                   )}
                 </div>
               </div>
+
+              {/* Mobile Card Layout - Registrations */}
+              <div className="block md:hidden bg-white/[0.01] border border-white/[0.05] rounded-2xl overflow-hidden shadow-2xl divide-y divide-white/[0.03]">
+                {filteredTeams.map((team, index) => {
+                  const isApproved = team.registration_status === 'Approved';
+                  const isRejected = team.registration_status === 'Rejected';
+                  return (
+                    <motion.div
+                      key={team.id}
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.04 }}
+                      className="p-4 hover:bg-white/[0.01] transition-colors"
+                    >
+                      {/* Card Header */}
+                      <div className="flex items-start gap-3 mb-3">
+                        <div className="w-9 h-9 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                          <Trophy className="w-4 h-4 text-purple-400" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="min-w-0">
+                              <h4 className="text-sm font-black text-white leading-tight">{team.team_name}</h4>
+                              <p className="text-[10px] text-gray-400 mt-0.5 truncate">{team.college_name}</p>
+                            </div>
+                            <span className={`flex-shrink-0 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider border ${
+                              isApproved
+                                ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                                : isRejected
+                                  ? 'bg-rose-500/10 text-rose-400 border-rose-500/20'
+                                  : 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                            }`}>
+                              {isApproved ? '✓ Approved' : isRejected ? '✗ Rejected' : '⏳ Pending'}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Info Grid */}
+                      <div className="grid grid-cols-2 gap-2 mb-3 ml-12">
+                        <div className="bg-white/[0.02] rounded-xl p-2.5 border border-white/[0.03]">
+                          <p className="text-[8px] text-gray-600 uppercase tracking-wider font-bold mb-0.5">Sport</p>
+                          <p className="text-[11px] font-bold text-purple-300 truncate">{team.sport || '—'}</p>
+                        </div>
+                        <div className="bg-white/[0.02] rounded-xl p-2.5 border border-white/[0.03]">
+                          <p className="text-[8px] text-gray-600 uppercase tracking-wider font-bold mb-0.5">Roster</p>
+                          <p className="text-[11px] font-bold text-gray-200">{(team.players?.length || 0) + 1} Athletes</p>
+                        </div>
+                        <div className="bg-white/[0.02] rounded-xl p-2.5 border border-white/[0.03]">
+                          <p className="text-[8px] text-gray-600 uppercase tracking-wider font-bold mb-0.5">Captain</p>
+                          <p className="text-[11px] font-bold text-gray-200 truncate">{team.captain_name || '—'}</p>
+                        </div>
+                        <div className="bg-white/[0.02] rounded-xl p-2.5 border border-white/[0.03]">
+                          <p className="text-[8px] text-gray-600 uppercase tracking-wider font-bold mb-0.5">Contact</p>
+                          <p className="text-[11px] font-mono font-bold text-purple-300">{team.captain_mobile || '—'}</p>
+                        </div>
+
+                        {isApproved && (
+                          <div className="bg-white/[0.02] rounded-xl p-2.5 border border-white/[0.03] col-span-2">
+                            <p className="text-[8px] text-gray-600 uppercase tracking-wider font-bold mb-0.5">Payment Details</p>
+                            <div className="text-[11px] font-semibold text-gray-300">
+                              {team.payment_method === 'Mixed' ? (
+                                <span>Mixed: UPI (₹{team.upi_amount}) + Cash (₹{team.cash_amount})</span>
+                              ) : team.payment_method === 'Cash' ? (
+                                <span className="text-emerald-400 font-mono">💵 Fully Cash (₹{getTeamFee(team)})</span>
+                              ) : (
+                                <span className="text-purple-400 font-mono">📱 Fully UPI (₹{getTeamFee(team)})</span>
+                              )}
+                            </div>
+                          </div>
+                        )}
+
+                        <div className="bg-white/[0.02] rounded-xl p-2.5 border border-white/[0.03] col-span-2">
+                          <p className="text-[8px] text-gray-600 uppercase tracking-wider font-bold mb-0.5">Registered On</p>
+                          <p className="text-[10px] font-mono text-gray-400">{formatDate(team.created_at)}</p>
+                        </div>
+                      </div>
+
+                      {/* Action Buttons */}
+                      <div className="flex flex-wrap items-center gap-2 ml-12">
+                        <button
+                          onClick={async () => {
+                            let paymentUrl = team.payment_screenshot_url;
+                            if (!paymentUrl) {
+                              paymentUrl = await fetchPaymentScreenshot(team.college_name, team.sport);
+                            }
+                            setPaymentScreenshotUrl(paymentUrl);
+                            setSelectedTeam(team);
+                            setViewTeamMode(true);
+                          }}
+                          className="flex-1 py-2 bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/20 text-purple-300 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 min-h-[40px]"
+                        >
+                          <Eye className="w-3.5 h-3.5" /> Details
+                        </button>
+
+                        <div className="flex items-center gap-1.5 flex-shrink-0">
+                          {!isApproved && (
+                            <button
+                              onClick={() => openApproveModal('team', team)}
+                              className="w-10 h-10 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 rounded-xl text-emerald-400 flex items-center justify-center"
+                              title="Approve Team"
+                            >
+                              <Check className="w-4 h-4" />
+                            </button>
+                          )}
+                          {!isRejected && (
+                            <button
+                              onClick={() => handleRejectTeam(team.id, team.team_name)}
+                              className="w-10 h-10 bg-yellow-500/10 hover:bg-yellow-500/20 border border-yellow-500/20 rounded-xl text-yellow-400 flex items-center justify-center"
+                              title="Reject Team"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          )}
+                          {adminRecord?.role === 'super_admin' && (
+                            <button
+                              onClick={() => handleDeleteTeam(team.id, team.team_name)}
+                              className="w-10 h-10 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 rounded-xl text-red-400 flex items-center justify-center"
+                              title="Delete Record"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+
+                {filteredTeams.length === 0 && (
+                  <div className="text-center py-16 text-gray-500">
+                    <Trophy className="w-12 h-12 mx-auto text-gray-700 mb-3" />
+                    <p className="text-sm">No registrations match your filter.</p>
+                  </div>
+                )}
+              </div>
             </motion.div>
           )}
 
-          {/* ================= TAB 3: ACCOMMODATION REQUESTS ================= */}
           {activeTab === 'accommodations' && (
             <motion.div
               initial={{ opacity: 0, y: 15 }}
@@ -1033,8 +1195,8 @@ export default function AdminDashboard() {
               className="space-y-6"
             >
               {/* Filters Toolbar */}
-              <div className="bg-white/[0.01] border border-white/[0.05] p-5 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div className="relative max-w-md w-full">
+              <div className="bg-white/[0.01] border border-white/[0.05] p-4 rounded-2xl flex flex-col gap-3 md:flex-row md:items-center md:justify-between md:gap-4">
+                <div className="relative w-full md:max-w-md">
                   <Search className="w-4 h-4 text-gray-500 absolute top-1/2 left-4 -translate-y-1/2" />
                   <input
                     type="text"
@@ -1045,13 +1207,14 @@ export default function AdminDashboard() {
                   />
                 </div>
 
-                <div className="flex flex-wrap items-center gap-3">
+                <div className="flex flex-wrap items-center gap-2">
+                  <Filter className="w-3.5 h-3.5 text-gray-500 flex-shrink-0" />
                   {/* Sport Filter */}
-                  <div className="relative">
+                  <div className="relative flex-1 sm:flex-initial">
                     <select
                       value={accSportFilter}
                       onChange={(e) => setAccSportFilter(e.target.value)}
-                      className="px-4 py-3 pr-10 bg-white/[0.02] border border-white/[0.06] rounded-xl text-xs text-white appearance-none cursor-pointer focus:outline-none focus:border-purple-500/40 hover:border-white/10"
+                      className="w-full px-4 py-2.5 pr-10 bg-white/[0.02] border border-white/[0.06] rounded-xl text-xs text-white appearance-none cursor-pointer focus:outline-none focus:border-purple-500/40 hover:border-white/10"
                     >
                       <option value="All" className="bg-[#0f0518]">All Sports</option>
                       {allSports.map(s => (
@@ -1062,11 +1225,11 @@ export default function AdminDashboard() {
                   </div>
 
                   {/* Status Filter */}
-                  <div className="relative">
+                  <div className="relative flex-1 sm:flex-initial">
                     <select
                       value={accStatusFilter}
                       onChange={(e) => setAccStatusFilter(e.target.value)}
-                      className="px-4 py-3 pr-10 bg-white/[0.02] border border-white/[0.06] rounded-xl text-xs text-white appearance-none cursor-pointer focus:outline-none focus:border-purple-500/40 hover:border-white/10"
+                      className="w-full px-4 py-2.5 pr-10 bg-white/[0.02] border border-white/[0.06] rounded-xl text-xs text-white appearance-none cursor-pointer focus:outline-none focus:border-purple-500/40 hover:border-white/10"
                     >
                       <option value="All" className="bg-[#0f0518]">All Bookings</option>
                       <option value="Pending" className="bg-[#0f0518]">Pending</option>
@@ -1075,11 +1238,15 @@ export default function AdminDashboard() {
                     </select>
                     <ChevronRight className="w-3.5 h-3.5 text-gray-500 rotate-90 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                   </div>
+
+                  <span className="text-[10px] text-gray-500 font-mono flex-shrink-0 bg-white/[0.03] px-2.5 py-2 rounded-xl border border-white/[0.04]">
+                    {filteredAccommodations.length} results
+                  </span>
                 </div>
               </div>
 
-              {/* Table Wrapper */}
-              <div className="bg-white/[0.01] border border-white/[0.05] rounded-3xl overflow-hidden shadow-2xl">
+              {/* Desktop Table View */}
+              <div className="hidden md:block bg-white/[0.01] border border-white/[0.05] rounded-3xl overflow-hidden shadow-2xl">
                 <div className="overflow-x-auto">
                   <table className="w-full border-collapse text-left font-sans">
                     <thead>
@@ -1198,7 +1365,7 @@ export default function AdminDashboard() {
                                     whileHover={{ scale: 1.02 }}
                                     whileTap={{ scale: 0.98 }}
                                     onClick={() => handleUpdateAccStatus(row.id, 'rejected')}
-                                    className="px-3 py-1.5 bg-red-600/10 hover:bg-red-600/20 border border-red-500/20 text-red-400 rounded-lg text-xs font-bold transition-all"
+                                    className="px-3 py-1.5 bg-red-650/10 hover:bg-red-650/20 border border-red-500/20 text-red-400 rounded-lg text-xs font-bold transition-all"
                                   >
                                     Reject
                                   </motion.button>
@@ -1228,6 +1395,150 @@ export default function AdminDashboard() {
                     </div>
                   )}
                 </div>
+              </div>
+
+              {/* Mobile Card Layout - Hostel Bookings */}
+              <div className="block md:hidden bg-white/[0.01] border border-white/[0.05] rounded-2xl overflow-hidden shadow-2xl divide-y divide-white/[0.03]">
+                {filteredAccommodations.map((row, index) => {
+                  const screenshotUrl = getAccScreenshotUrl(row.payment_screenshot_url);
+                  const isApproved = row.status === 'approved';
+                  const isRejected = row.status === 'rejected';
+                  return (
+                    <motion.div
+                      key={row.id}
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.04 }}
+                      className="p-4 hover:bg-white/[0.01] transition-colors"
+                    >
+                      {/* Card Header */}
+                      <div className="flex items-start gap-3 mb-3">
+                        <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5 ${
+                          isApproved ? 'bg-emerald-500/10 border border-emerald-500/20' : 'bg-amber-500/10 border border-amber-500/20'
+                        }`}>
+                          <Home className={`w-4 h-4 ${isApproved ? 'text-emerald-400' : 'text-amber-400'}`} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="min-w-0">
+                              <h4 className="text-sm font-black text-white leading-tight">{row.team_name}</h4>
+                              <p className="text-[10px] text-gray-400 mt-0.5 truncate">{row.college_name}</p>
+                            </div>
+                            <span className={`flex-shrink-0 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider border ${
+                              isApproved
+                                ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                                : isRejected
+                                  ? 'bg-rose-500/10 text-rose-400 border-rose-500/20'
+                                  : 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                            }`}>
+                              {isApproved ? '✓ Approved' : isRejected ? '✗ Rejected' : '⏳ Pending'}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Info Grid */}
+                      <div className="grid grid-cols-2 gap-2 mb-3 ml-12">
+                        <div className="bg-white/[0.02] rounded-xl p-2.5 border border-white/[0.03]">
+                          <p className="text-[8px] text-gray-600 uppercase tracking-wider font-bold mb-0.5">Captain</p>
+                          <p className="text-[11px] font-bold text-gray-200 truncate">{row.captain_name || '—'}</p>
+                        </div>
+                        <div className="bg-white/[0.02] rounded-xl p-2.5 border border-white/[0.03]">
+                          <p className="text-[8px] text-gray-600 uppercase tracking-wider font-bold mb-0.5">Sport</p>
+                          <span className="text-[11px] font-bold text-purple-300 truncate">{row.sport || '—'}</span>
+                        </div>
+                        <div className="bg-white/[0.02] rounded-xl p-2.5 border border-white/[0.03]">
+                          <p className="text-[8px] text-gray-600 uppercase tracking-wider font-bold mb-0.5">Roster</p>
+                          <button
+                            onClick={() => setSelectedPlayersModal({ show: true, players: row.selected_players || [] })}
+                            className="text-[11px] font-black text-blue-300 flex items-center gap-1 hover:text-blue-200 transition-colors"
+                          >
+                            <Users className="w-3.5 h-3.5" />
+                            {row.total_persons} Players
+                          </button>
+                        </div>
+                        <div className="bg-white/[0.02] rounded-xl p-2.5 border border-white/[0.03]">
+                          <p className="text-[8px] text-gray-600 uppercase tracking-wider font-bold mb-0.5">Charge</p>
+                          <p className="text-[11px] font-mono font-bold text-emerald-400">₹{row.total_amount}</p>
+                        </div>
+
+                        {isApproved && (
+                          <div className="bg-white/[0.02] rounded-xl p-2.5 border border-white/[0.03] col-span-2">
+                            <p className="text-[8px] text-gray-600 uppercase tracking-wider font-bold mb-0.5">Payment Breakup</p>
+                            <div className="text-[11px] font-semibold text-gray-300">
+                              {row.payment_method === 'Mixed' ? (
+                                <span>Mixed: UPI (₹{row.upi_amount}) + Cash (₹{row.cash_amount})</span>
+                              ) : row.payment_method === 'Cash' ? (
+                                <span className="text-emerald-400 font-mono">💵 Fully Cash (₹{row.total_amount})</span>
+                              ) : (
+                                <span className="text-purple-400 font-mono">📱 Fully UPI (₹{row.total_amount})</span>
+                              )}
+                            </div>
+                          </div>
+                        )}
+
+                        <div className="bg-white/[0.02] rounded-xl p-2.5 border border-white/[0.03] col-span-2">
+                          <p className="text-[8px] text-gray-600 uppercase tracking-wider font-bold mb-0.5">UTR / Transaction No.</p>
+                          <p className="text-[11px] font-mono font-bold text-purple-300 flex items-center gap-1">
+                            <CreditCard className="w-3 h-3 text-gray-500" />
+                            {row.utr_number || 'Not provided'}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Action Buttons */}
+                      <div className="flex flex-wrap items-center gap-2 ml-12">
+                        {screenshotUrl ? (
+                          <button
+                            onClick={() => setLightboxUrl(screenshotUrl)}
+                            className="flex-1 py-2 bg-[#0c051a] hover:bg-purple-500/20 border border-purple-500/20 text-purple-300 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 min-h-[40px]"
+                          >
+                            <Eye className="w-3.5 h-3.5" /> Receipt
+                          </button>
+                        ) : (
+                          <div className="flex-1 py-2 bg-white/[0.01] border border-white/[0.03] text-gray-600 text-[10px] rounded-xl flex items-center justify-center min-h-[40px]">
+                            No Receipt
+                          </div>
+                        )}
+
+                        <div className="flex items-center gap-1.5 flex-shrink-0">
+                          {!isApproved && (
+                            <button
+                              onClick={() => openApproveModal('accommodation', row)}
+                              className="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all min-h-[40px] flex items-center justify-center"
+                            >
+                              Approve
+                            </button>
+                          )}
+                          {!isRejected && (
+                            <button
+                              onClick={() => handleUpdateAccStatus(row.id, 'rejected')}
+                              className="px-3 py-2 bg-red-650/10 hover:bg-red-650/20 border border-red-500/20 text-red-400 rounded-xl text-xs font-bold transition-all min-h-[40px] flex items-center justify-center"
+                            >
+                              Reject
+                            </button>
+                          )}
+                          {adminRecord?.role === 'super_admin' && (
+                            <button
+                              onClick={() => handleDeleteAccommodation(row.id, row.team_name)}
+                              className="w-10 h-10 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 rounded-xl text-red-400 flex items-center justify-center"
+                              title="Delete Record"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+
+                {filteredAccommodations.length === 0 && (
+                  <div className="text-center py-16 text-gray-500">
+                    <Home className="w-12 h-12 mx-auto text-gray-700 mb-3" />
+                    <p className="text-sm">No accommodation requests match your filters.</p>
+                  </div>
+                )}
               </div>
             </motion.div>
           )}
@@ -1270,6 +1581,81 @@ export default function AdminDashboard() {
           )}
 
         </main>
+
+        {/* ===== MOBILE BOTTOM NAVIGATION BAR ===== */}
+        <nav className="fixed bottom-0 left-0 right-0 md:hidden z-40">
+          {/* Blur + gradient background */}
+          <div className="absolute inset-0 bg-[#07040d]/95 backdrop-blur-xl border-t border-white/[0.08]" />
+          <div className="relative flex items-center justify-around px-2 py-1 safe-area-inset-bottom">
+            {/* Overview tab */}
+            <button
+              onClick={() => setActiveTab('overview')}
+              className={`flex flex-col items-center gap-0.5 px-3 py-2.5 rounded-2xl transition-all duration-200 min-w-[50px] ${
+                activeTab === 'overview'
+                  ? 'bg-purple-500/15 text-purple-400'
+                  : 'text-gray-500 hover:text-gray-300'
+              }`}
+            >
+              <LayoutDashboard className={`w-5 h-5 transition-transform duration-200 ${activeTab === 'overview' ? 'scale-110' : ''}`} />
+              <span className="text-[9px] font-bold tracking-wider uppercase">Overview</span>
+              {activeTab === 'overview' && <span className="w-1 h-1 bg-purple-400 rounded-full" />}
+            </button>
+
+            {/* Registrations tab */}
+            <button
+              onClick={() => setActiveTab('registrations')}
+              className={`flex flex-col items-center gap-0.5 px-3 py-2.5 rounded-2xl transition-all duration-200 min-w-[50px] ${
+                activeTab === 'registrations'
+                  ? 'bg-purple-500/15 text-purple-400'
+                  : 'text-gray-500 hover:text-gray-300'
+              }`}
+            >
+              <Users className={`w-5 h-5 transition-transform duration-200 ${activeTab === 'registrations' ? 'scale-110' : ''}`} />
+              <span className="text-[9px] font-bold tracking-wider uppercase">Teams</span>
+              {activeTab === 'registrations' && <span className="w-1 h-1 bg-purple-400 rounded-full" />}
+            </button>
+
+            {/* Hostel tab */}
+            <button
+              onClick={() => setActiveTab('accommodations')}
+              className={`flex flex-col items-center gap-0.5 px-3 py-2.5 rounded-2xl transition-all duration-200 min-w-[50px] ${
+                activeTab === 'accommodations'
+                  ? 'bg-purple-500/15 text-purple-400'
+                  : 'text-gray-500 hover:text-gray-300'
+              }`}
+            >
+              <Home className={`w-5 h-5 transition-transform duration-200 ${activeTab === 'accommodations' ? 'scale-110' : ''}`} />
+              <span className="text-[9px] font-bold tracking-wider uppercase">Hostel</span>
+              {activeTab === 'accommodations' && <span className="w-1 h-1 bg-purple-400 rounded-full" />}
+            </button>
+
+            {/* Content tab */}
+            <button
+              onClick={() => setActiveTab('content')}
+              className={`flex flex-col items-center gap-0.5 px-3 py-2.5 rounded-2xl transition-all duration-200 min-w-[50px] ${
+                activeTab === 'content'
+                  ? 'bg-purple-500/15 text-purple-400'
+                  : 'text-gray-500 hover:text-gray-300'
+              }`}
+            >
+              <FileEdit className={`w-5 h-5 transition-transform duration-200 ${activeTab === 'content' ? 'scale-110' : ''}`} />
+              <span className="text-[9px] font-bold tracking-wider uppercase">Content</span>
+              {activeTab === 'content' && <span className="w-1 h-1 bg-purple-400 rounded-full" />}
+            </button>
+
+            {/* Divider */}
+            <div className="w-px h-8 bg-white/[0.06] mx-1" />
+
+            {/* Logout */}
+            <button
+              onClick={handleLogout}
+              className="flex flex-col items-center gap-0.5 px-2 py-2.5 rounded-2xl transition-all duration-200 text-gray-500 hover:text-red-400 hover:bg-red-500/10 min-w-[44px]"
+            >
+              <LogOut className="w-5 h-5" />
+              <span className="text-[9px] font-bold tracking-wider uppercase">Exit</span>
+            </button>
+          </div>
+        </nav>
       </div>
 
       {/* ================= PAYMENT APPROVAL MODAL OVERLAY ================= */}
