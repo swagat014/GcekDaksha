@@ -228,7 +228,7 @@ export default function SuperAdminDashboard() {
     }
     setLoading(true);
     try {
-      const { error } = await supabase.rpc('change_admin_password', {
+      const { error } = await supabase.rpc('update_admin_password_force', {
         target_user_id: selectedAdminForPassword.user_id,
         new_password: adminPasswordChangeText.trim()
       });

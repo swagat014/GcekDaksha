@@ -16,13 +16,16 @@ CREATE OR REPLACE FUNCTION public.create_admin_user(
 RETURNS uuid
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public, auth
+SET search_path = public, auth, extensions
 AS $$
 DECLARE
   new_user_id uuid;
 BEGIN
-  -- Check if caller is super admin
-  IF NOT public.is_super_admin(auth.uid()) THEN
+  -- Check if caller is super admin (inlined to avoid dependency issues)
+  IF NOT EXISTS (
+    SELECT 1 FROM public.admins 
+    WHERE user_id = auth.uid() AND role = 'super_admin'
+  ) THEN
     RAISE EXCEPTION 'Access Denied: Only super admins can create admin users.';
   END IF;
 
@@ -77,18 +80,21 @@ $$;
 
 
 -- 4. Recreate the RPC: Change an Admin's password
-CREATE OR REPLACE FUNCTION public.change_admin_password(
-  target_user_id uuid,
+CREATE OR REPLACE FUNCTION public.update_admin_password_force(
+  target_user_id text,
   new_password text
 )
 RETURNS void
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public, auth
+SET search_path = public, auth, extensions
 AS $$
 BEGIN
-  -- Check if caller is super admin
-  IF NOT public.is_super_admin(auth.uid()) THEN
+  -- Check if caller is super admin (inlined to avoid dependency issues)
+  IF NOT EXISTS (
+    SELECT 1 FROM public.admins 
+    WHERE user_id = auth.uid() AND role = 'super_admin'
+  ) THEN
     RAISE EXCEPTION 'Access Denied: Only super admins can change admin passwords.';
   END IF;
 
@@ -96,11 +102,11 @@ BEGIN
   UPDATE auth.users
   SET encrypted_password = crypt(new_password, gen_salt('bf')),
       updated_at = now()
-  WHERE id = target_user_id;
+  WHERE id = target_user_id::uuid;
 
   -- Update password_plain in public.admins
   UPDATE public.admins
   SET password_plain = new_password
-  WHERE user_id = target_user_id;
+  WHERE user_id = target_user_id::uuid;
 END;
 $$;

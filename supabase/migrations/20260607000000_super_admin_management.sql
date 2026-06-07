@@ -116,7 +116,7 @@ CREATE OR REPLACE FUNCTION public.create_admin_user(
 RETURNS uuid
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public, auth
+SET search_path = public, auth, extensions
 AS $$
 DECLARE
   new_user_id uuid;
@@ -178,13 +178,13 @@ $$;
 
 -- 8. RPC: Change an Admin's password
 CREATE OR REPLACE FUNCTION public.change_admin_password(
-  target_user_id uuid,
+  target_user_id text,
   new_password text
 )
 RETURNS void
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public, auth
+SET search_path = public, auth, extensions
 AS $$
 BEGIN
   -- Check if caller is super admin
@@ -196,12 +196,12 @@ BEGIN
   UPDATE auth.users
   SET encrypted_password = crypt(new_password, gen_salt('bf')),
       updated_at = now()
-  WHERE id = target_user_id;
+  WHERE id = target_user_id::uuid;
 
   -- Update plain_password in public.admins
   UPDATE public.admins
   SET plain_password = new_password
-  WHERE user_id = target_user_id;
+  WHERE user_id = target_user_id::uuid;
 END;
 $$;
 
