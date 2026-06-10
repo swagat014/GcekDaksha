@@ -9,6 +9,29 @@ import { supabase } from "../supabaseClient";
 import { uploadFile } from "../utils/uploadFile";
 import { useSiteContent } from '../contexts/SiteContentContext';
 
+const slideVariants = {
+  enter: (direction) => ({
+    x: direction > 0 ? "50%" : "-50%",
+    opacity: 0,
+  }),
+  center: {
+    x: 0,
+    opacity: 1,
+    transition: {
+      x: { type: 'spring', stiffness: 300, damping: 30 },
+      opacity: { duration: 0.2 },
+    },
+  },
+  exit: (direction) => ({
+    x: direction > 0 ? "-50%" : "50%",
+    opacity: 0,
+    transition: {
+      x: { type: 'spring', stiffness: 300, damping: 30 },
+      opacity: { duration: 0.2 },
+    },
+  }),
+};
+
 export default function Register() {
   const [formData, setFormData] = useState({
     teamName: '',
@@ -31,6 +54,7 @@ export default function Register() {
   const [toast, setToast] = useState({ show: false, message: '', type: '' });
   const [lastSubmission, setLastSubmission] = useState(null);
   const [step, setStep] = useState(1);
+  const [direction, setDirection] = useState(1); // 1 = forward, -1 = backward
   const siteContent = useSiteContent();
   const sports = siteContent.registration?.sports || [];
   const isLive = siteContent.registration?.isLive !== false;
@@ -130,6 +154,7 @@ export default function Register() {
       return;
     }
     setErrors({});
+    setDirection(1);
     setStep((s) => s + 1);
   };
 
@@ -243,6 +268,7 @@ export default function Register() {
         setPaymentScreenshot(null);
         setPaymentCompleted(false);
         setSubmitted(false);
+        setDirection(1);
         setStep(1);
         setLastSubmission(submissionData);
         setToast({ show: false, message: '', type: '' });
@@ -264,14 +290,11 @@ export default function Register() {
     : 0;
 
   const inputClass = (error) =>
-    `w-full px-4 py-3 bg-white/[0.03] text-white text-sm rounded-xl border ${
+    `w-full px-4 py-3 bg-white/[0.02] text-white text-sm rounded-xl border ${
       error
-        ? 'border-red-500/50 bg-red-500/5'
-        : 'border-white/10 focus:border-purple-500/50 hover:border-white/20'
-    } transition-all placeholder-gray-500 focus:outline-none focus:bg-white/[0.05]`;
-
-  const fileInputClass =
-    'w-full text-sm text-gray-300 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-purple-600 file:text-white hover:file:bg-purple-700 cursor-pointer bg-white/[0.03] rounded-xl border border-white/10 px-3 py-2.5 hover:border-white/20 transition-all';
+        ? 'border-red-500/40 bg-red-500/5 focus:border-red-500/60 focus:ring-1 focus:ring-red-500/20'
+        : 'border-white/10 focus:border-purple-500/50 hover:border-white/20 focus:ring-1 focus:ring-purple-500/20'
+    } transition-all duration-300 placeholder-gray-500 focus:outline-none focus:bg-white/[0.04] backdrop-blur-md`;
 
   return (
     <section id="register" className="min-h-screen py-16 px-4 pt-28 relative overflow-hidden">
@@ -340,7 +363,7 @@ export default function Register() {
         )}
       </AnimatePresence>
 
-      <div className="max-w-2xl mx-auto relative z-10">
+      <div className="max-w-6xl mx-auto relative z-10">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -391,107 +414,60 @@ export default function Register() {
             </a>
           </p>
         </motion.div>
-
         {isLive ? (
-          <>
-            {/* Step Indicator */}
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="flex items-center justify-center gap-3 mb-8"
-            >
+          <div className="max-w-2xl mx-auto mt-6">
+            {/* Horizontal Stepper (Desktop & Mobile) */}
+            <div className="flex items-center justify-between mb-8 max-w-xl mx-auto relative px-4">
+              {/* Background Connecting Line */}
+              <div className="absolute left-8 right-8 top-1/2 -translate-y-1/2 h-[2px] bg-white/[0.05] z-0" />
+              
+              {/* Active Connecting Line */}
+              <div className="absolute left-8 right-8 top-1/2 -translate-y-1/2 h-[2px] z-0">
+                <motion.div
+                  className="h-full bg-gradient-to-r from-purple-500 via-fuchsia-500 to-violet-500 origin-left"
+                  initial={{ scaleX: 0 }}
+                  animate={{ scaleX: step === 1 ? 0 : step === 2 ? 0.5 : 1 }}
+                  transition={{ duration: 0.4, ease: "easeInOut" }}
+                  style={{ height: '100%' }}
+                />
+              </div>
+
               {[
-                { num: 1, label: 'Team', icon: Trophy },
-                { num: 2, label: 'Docs', icon: FileText },
-                { num: 3, label: 'Pay', icon: CreditCard },
+                { num: 1, label: 'Team Details', icon: Trophy },
+                { num: 2, label: 'Documents', icon: FileText },
+                { num: 3, label: 'Payment', icon: CreditCard },
               ].map((s, idx) => {
                 const StepIcon = s.icon;
+                const isActive = step === s.num;
+                const isCompleted = step > s.num;
+                
                 return (
-                  <div key={s.num} className="flex items-center gap-3">
+                  <div key={s.num} className="flex flex-col items-center relative z-10">
                     <motion.div
-                      className="relative"
                       whileHover={{ scale: step >= s.num ? 1.05 : 1 }}
+                      className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-300 ${
+                        isCompleted
+                          ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20'
+                          : isActive
+                            ? 'bg-gradient-to-br from-purple-600 to-fuchsia-600 shadow-xl shadow-purple-500/30 text-white'
+                            : 'bg-[#150a25] border border-white/10 text-gray-500'
+                      }`}
                     >
-                      <div
-                        className={`relative w-12 h-12 rounded-xl flex flex-col items-center justify-center transition-all duration-300 ${
-                          step >= s.num
-                            ? 'bg-gradient-to-br from-purple-600 to-fuchsia-600 shadow-lg shadow-purple-500/30'
-                            : 'bg-white/[0.03] border border-white/10'
-                        }`}
-                      >
-                        {step > s.num ? (
-                          <Check className="w-5 h-5 text-white" />
-                        ) : (
-                          <StepIcon
-                            className={`w-4 h-4 ${step >= s.num ? 'text-white' : 'text-gray-600'}`}
-                          />
-                        )}
-                      </div>
-                      <p
-                        className={`text-[10px] font-semibold mt-1.5 text-center ${
-                          step >= s.num ? 'text-purple-400' : 'text-gray-600'
-                        }`}
-                      >
-                        {s.label}
-                      </p>
+                      {isCompleted ? (
+                        <Check className="w-5 h-5" />
+                      ) : (
+                        <StepIcon className="w-5 h-5" />
+                      )}
                     </motion.div>
-                    {idx < 2 && (
-                      <div className="w-12 h-0.5 rounded-full bg-white/5 overflow-hidden mb-5">
-                        <motion.div
-                          className="h-full bg-gradient-to-r from-purple-500 to-fuchsia-500"
-                          initial={{ width: '0%' }}
-                          animate={{ width: step > s.num ? '100%' : '0%' }}
-                          transition={{ duration: 0.4 }}
-                        />
-                      </div>
-                    )}
+                    <span className={`text-[10px] font-bold mt-2 tracking-wider uppercase ${
+                      isActive ? 'text-purple-400' : isCompleted ? 'text-emerald-400' : 'text-gray-500'
+                    }`}>
+                      {s.label}
+                    </span>
                   </div>
                 );
               })}
-            </motion.div>
-
-            {/* Last Submission */}
-            <AnimatePresence>
-              {lastSubmission && (
-                <motion.div
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  className="mb-6 relative overflow-hidden rounded-2xl"
-                >
-                  <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/10 to-teal-500/10" />
-                  <div className="relative p-5 border border-emerald-500/20 bg-black/40 backdrop-blur-xl">
-                    <div className="flex justify-between items-center mb-4">
-                      <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                        <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                        Last Registration
-                      </h3>
-                      <motion.button
-                        whileHover={{ scale: 1.05, rotate: 90 }}
-                        whileTap={{ scale: 0.95 }}
-                        onClick={() => setLastSubmission(null)}
-                        className="text-xs px-3 py-1.5 bg-emerald-600/20 text-emerald-300 rounded-lg border border-emerald-500/30 hover:bg-emerald-600/30 transition-all"
-                      >
-                        Close
-                      </motion.button>
-                    </div>
-                    <div className="grid grid-cols-2 gap-3 text-xs">
-                      {[
-                        ['Team', lastSubmission.teamName],
-                        ['Sport', lastSubmission.sport],
-                        ['Captain', lastSubmission.captainName],
-                        ['Players', lastSubmission.playerCount],
-                      ].map(([l, v], i) => (
-                        <div key={i} className="bg-white/[0.03] p-3 rounded-lg border border-white/5">
-                          <p className="text-gray-500 text-[10px] uppercase tracking-wider mb-1">{l}</p>
-                          <p className="text-white font-semibold">{v}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+            </div>
 
             {/* Form */}
             <motion.form
@@ -499,656 +475,739 @@ export default function Register() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
             >
-          <div className="relative">
-            <div className="absolute -inset-[1px] bg-gradient-to-r from-purple-600/20 via-fuchsia-600/20 to-violet-600/20 rounded-3xl blur-sm" />
-            <div
-              className="relative rounded-3xl overflow-hidden"
-              style={{
-                background:
-                  'linear-gradient(180deg, rgba(15,5,25,0.95) 0%, rgba(10,3,20,0.98) 100%)',
-              }}
-            >
-              <div className="absolute inset-0 bg-gradient-to-br from-purple-900/10 via-transparent to-fuchsia-900/10" />
-              <div className="relative p-6 md:p-8 border border-purple-500/10 rounded-3xl">
-                {/* ══════ SUCCESS ══════ */}
-                {submitted && (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="text-center py-12"
-                  >
-                    <motion.div
-                      initial={{ scale: 0, rotate: -180 }}
-                      animate={{ scale: 1, rotate: 0 }}
-                      transition={{ type: 'spring', stiffness: 200 }}
-                      className="w-20 h-20 mx-auto mb-5 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-2xl shadow-emerald-500/30"
-                    >
-                      <CheckCircle2 className="w-10 h-10 text-white" />
-                    </motion.div>
-                    <h3 className="text-2xl font-black text-white mb-2">You&apos;re In!</h3>
-                    <p className="text-emerald-400 text-sm">
-                      Registration complete for DAKSHA 2026
-                    </p>
-                  </motion.div>
-                )}
-
-                {/* ══════ STEP 1: TEAM INFO ══════ */}
-                {!submitted && step === 1 && (
-                  <motion.div
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    className="space-y-5"
-                  >
-                    <div className="flex items-center gap-3 mb-5">
-                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-600 to-fuchsia-600 flex items-center justify-center shadow-lg shadow-purple-500/25">
-                        <Trophy className="w-5 h-5 text-white" />
-                      </div>
-                      <div>
-                        <h3 className="text-lg font-bold text-white">Team Details</h3>
-                        <p className="text-gray-500 text-xs">Basic information</p>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div>
-                        <label className="text-xs text-gray-400 font-medium mb-1.5 flex items-center gap-1.5">
-                          <Trophy className="w-3 h-3 text-purple-400" /> Team Name *
-                        </label>
-                        <input
-                          type="text"
-                          name="teamName"
-                          value={formData.teamName}
-                          onChange={handleChange}
-                          placeholder="Enter name"
-                          className={inputClass(errors.teamName)}
-                        />
-                        {errors.teamName && (
-                          <p className="text-red-400 text-xs mt-1">{errors.teamName}</p>
-                        )}
-                      </div>
-                      <div>
-                        <label className="text-xs text-gray-400 font-medium mb-1.5 flex items-center gap-1.5">
-                          <Building2 className="w-3 h-3 text-blue-400" /> College Name *
-                        </label>
-                        <input
-                          type="text"
-                          name="collegeName"
-                          value={formData.collegeName}
-                          onChange={handleChange}
-                          placeholder="College name"
-                          className={inputClass(errors.collegeName)}
-                        />
-                        {errors.collegeName && (
-                          <p className="text-red-400 text-xs mt-1">{errors.collegeName}</p>
-                        )}
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="text-xs text-gray-400 font-medium mb-1.5 flex items-center gap-1.5">
-                        <Star className="w-3 h-3 text-amber-400" /> Sport *
-                      </label>
-                      <div className="relative">
-                        <select
-                          name="sport"
-                          value={formData.sport}
-                          onChange={handleChange}
-                          className={`${inputClass(errors.sport)} appearance-none cursor-pointer`}
-                        >
-                          <option value="" className="bg-[#0f0518]">
-                            Choose sport...
-                          </option>
-                          {sports.map((sport) => (
-                            <option key={sport.id} value={sport.name} className="bg-[#0f0518]">
-                              {sport.name} ({sport.teamSize}P) - ₹{sport.fee}
-                            </option>
-                          ))}
-                        </select>
-                        <ChevronRight className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 rotate-90 pointer-events-none" />
-                      </div>
-                      {errors.sport && (
-                        <p className="text-red-400 text-xs mt-1">{errors.sport}</p>
-                      )}
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div>
-                        <label className="text-xs text-gray-400 font-medium mb-1.5 flex items-center gap-1.5">
-                          <User className="w-3 h-3 text-emerald-400" /> Captain Name *
-                        </label>
-                        <input
-                          type="text"
-                          name="captainName"
-                          value={formData.captainName}
-                          onChange={handleChange}
-                          placeholder="Full name"
-                          className={inputClass(errors.captainName)}
-                        />
-                        {errors.captainName && (
-                          <p className="text-red-400 text-xs mt-1">{errors.captainName}</p>
-                        )}
-                      </div>
-                      <div>
-                        <label className="text-xs text-gray-400 font-medium mb-1.5 flex items-center gap-1.5">
-                          <Phone className="w-3 h-3 text-cyan-400" /> Captain Mobile *
-                        </label>
-                        <input
-                          type="tel"
-                          name="captainMobile"
-                          value={formData.captainMobile}
-                          onChange={handleChange}
-                          placeholder="10-digit number"
-                          maxLength={10}
-                          className={inputClass(errors.captainMobile)}
-                        />
-                        {errors.captainMobile && (
-                          <p className="text-red-400 text-xs mt-1">{errors.captainMobile}</p>
-                        )}
-                      </div>
-                    </div>
-
-                    <motion.button
-                      type="button"
-                      onClick={handleNext}
-                      whileHover={{ scale: 1.01, y: -1 }}
-                      whileTap={{ scale: 0.99 }}
-                      className="w-full py-3.5 mt-2 rounded-xl text-sm font-bold text-white relative overflow-hidden group"
-                      style={{
-                        background:
-                          'linear-gradient(135deg, #9333ea 0%, #c026d3 50%, #7c3aed 100%)',
-                      }}
-                    >
-                      <span className="relative z-10 flex items-center justify-center gap-2">
-                        Continue{' '}
-                        <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
-                      </span>
-                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
-                    </motion.button>
-                  </motion.div>
-                )}
-
-                {/* ══════ STEP 2: DOCUMENTS & MEMBERS ══════ */}
-                {!submitted && step === 2 && (
-                  <motion.div
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    className="space-y-5"
-                  >
-                    <div className="flex items-center gap-3 mb-5">
-                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-600 to-purple-600 flex items-center justify-center shadow-lg shadow-violet-500/25">
-                        <FileText className="w-5 h-5 text-white" />
-                      </div>
-                      <div>
-                        <h3 className="text-lg font-bold text-white">Documents</h3>
-                        <p className="text-gray-500 text-xs">Verification files</p>
-                      </div>
-                    </div>
-
-                    {/* Captain Documents */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div>
-                        <label className="text-xs text-gray-400 font-medium mb-1.5 flex items-center gap-1.5">
-                          <Shield className="w-3 h-3 text-purple-400" /> Captain Aadhaar *
-                        </label>
-                        <input
-                          type="file"
-                          accept="image/jpeg,image/jpg,image/png"
-                          onChange={(e) => {
-                            const f = handleImageFileChange(e.target.files[0]);
-                            if (f) setCaptainAadhaar(f);
-                          }}
-                          className={fileInputClass}
-                        />
-                        {captainAadhaar && (
-                          <p className="text-emerald-400 text-xs mt-1 flex items-center gap-1">
-                            <Check className="w-3 h-3" />
-                            {captainAadhaar.name}
-                          </p>
-                        )}
-                        {errors.captainAadhaar && (
-                          <p className="text-red-400 text-xs mt-1">{errors.captainAadhaar}</p>
-                        )}
-                        <p className="text-gray-500 text-xs mt-1">PNG/JPEG only (Max 5MB)</p>
-                      </div>
-                      <div>
-                        <label className="text-xs text-gray-400 font-medium mb-1.5 flex items-center gap-1.5">
-                          <Shield className="w-3 h-3 text-blue-400" /> College ID *
-                        </label>
-                        <input
-                          type="file"
-                          accept="image/jpeg,image/jpg,image/png"
-                          onChange={(e) => {
-                            const f = handleImageFileChange(e.target.files[0]);
-                            if (f) setCaptainId(f);
-                          }}
-                          className={fileInputClass}
-                        />
-                        {captainId && (
-                          <p className="text-emerald-400 text-xs mt-1 flex items-center gap-1">
-                            <Check className="w-3 h-3" />
-                            {captainId.name}
-                          </p>
-                        )}
-                        {errors.captainId && (
-                          <p className="text-red-400 text-xs mt-1">{errors.captainId}</p>
-                        )}
-                        <p className="text-gray-500 text-xs mt-1">PNG/JPEG only (Max 5MB)</p>
-                      </div>
-                    </div>
-
-                    {/* Team Members */}
-                    {teamMembers.length > 0 && (
-                      <div className="space-y-4 mt-6 pt-6 border-t border-white/5">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-600 to-blue-600 flex items-center justify-center">
-                              <Users className="w-4 h-4 text-white" />
-                            </div>
-                            <h3 className="text-base font-bold text-white">Team Members</h3>
-                          </div>
-                          <motion.button
-                            type="button"
-                            onClick={addTeamMember}
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            className="flex items-center gap-1 px-3 py-1.5 bg-purple-500/20 text-purple-300 rounded-lg text-xs font-semibold border border-purple-500/20 hover:bg-purple-500/30 transition-all"
-                          >
-                            <Plus className="w-3 h-3" /> Add
-                          </motion.button>
-                        </div>
-
-                        {teamMembers.map((member, index) => (
+              <div className="relative">
+                <div className="absolute -inset-[1px] bg-gradient-to-r from-purple-600/20 via-fuchsia-600/20 to-violet-600/20 rounded-3xl blur-sm" />
+                <div
+                  className="relative rounded-3xl overflow-hidden"
+                  style={{
+                    background: 'linear-gradient(180deg, rgba(15,5,25,0.95) 0%, rgba(10,3,20,0.98) 100%)',
+                  }}
+                >
+                  <div className="absolute inset-0 bg-gradient-to-br from-purple-900/10 via-transparent to-fuchsia-900/10" />
+                  <div className="relative p-6 md:p-8 border border-purple-500/10 rounded-3xl">
+                    <AnimatePresence mode="wait" custom={direction}>
+                        {submitted ? (
                           <motion.div
-                            key={member.id}
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className="rounded-xl p-4 border border-purple-500/10"
-                            style={{
-                              background:
-                                'linear-gradient(135deg, rgba(147,51,234,0.05) 0%, rgba(139,92,246,0.02) 100%)',
-                            }}
+                            key="success"
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.9 }}
+                            className="text-center py-12"
                           >
-                            <div className="flex items-center justify-between mb-3">
-                              <span className="text-xs font-bold text-purple-400">
-                                Player {index + 1}
-                              </span>
-                              {teamMembers.length > 1 && (
-                                <motion.button
-                                  type="button"
-                                  onClick={() => removeTeamMember(index)}
-                                  whileHover={{ scale: 1.1, rotate: 90 }}
-                                  whileTap={{ scale: 0.9 }}
-                                  className="w-6 h-6 bg-red-600/20 rounded-md flex items-center justify-center text-red-400 border border-red-500/20 hover:bg-red-600/30 transition-all"
-                                >
-                                  <X className="w-3 h-3" />
-                                </motion.button>
+                          <motion.div
+                            initial={{ scale: 0, rotate: -180 }}
+                            animate={{ scale: 1, rotate: 0 }}
+                            transition={{ type: 'spring', stiffness: 200 }}
+                            className="w-20 h-20 mx-auto mb-5 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-2xl shadow-emerald-500/30"
+                          >
+                            <CheckCircle2 className="w-10 h-10 text-white" />
+                          </motion.div>
+                          <h3 className="text-2xl font-black text-white mb-2">You&apos;re In!</h3>
+                          <p className="text-emerald-400 text-sm">
+                            Registration complete for DAKSHA 2026
+                          </p>
+                          </motion.div>
+                        ) : step === 1 ? (
+                          <motion.div
+                            key="step1"
+                            custom={direction}
+                            variants={slideVariants}
+                            initial="enter"
+                            animate="center"
+                            exit="exit"
+                            className="space-y-5"
+                          >
+                          <div className="flex items-center gap-3 mb-5">
+                            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-600 to-fuchsia-600 flex items-center justify-center shadow-lg shadow-purple-500/25">
+                              <Trophy className="w-5 h-5 text-white" />
+                            </div>
+                            <div>
+                              <h3 className="text-lg font-bold text-white">Team Details</h3>
+                              <p className="text-gray-500 text-xs">Basic information</p>
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                              <label className="text-xs text-gray-400 font-medium mb-1.5 flex items-center gap-1.5">
+                                <Trophy className="w-3 h-3 text-purple-400" /> Team Name *
+                              </label>
+                              <input
+                                type="text"
+                                name="teamName"
+                                value={formData.teamName}
+                                onChange={handleChange}
+                                placeholder="Enter name"
+                                className={inputClass(errors.teamName)}
+                              />
+                              {errors.teamName && (
+                                <p className="text-red-400 text-xs mt-1">{errors.teamName}</p>
                               )}
                             </div>
+                            <div>
+                              <label className="text-xs text-gray-400 font-medium mb-1.5 flex items-center gap-1.5">
+                                <Building2 className="w-3 h-3 text-blue-400" /> College Name *
+                              </label>
+                              <input
+                                type="text"
+                                name="collegeName"
+                                value={formData.collegeName}
+                                onChange={handleChange}
+                                placeholder="College name"
+                                className={inputClass(errors.collegeName)}
+                              />
+                              {errors.collegeName && (
+                                <p className="text-red-400 text-xs mt-1">{errors.collegeName}</p>
+                              )}
+                            </div>
+                          </div>
 
-                            <div className="space-y-3">
-                              {/* Player Name */}
-                              <div>
-                                <input
-                                  type="text"
-                                  value={member.name}
-                                  onChange={(e) =>
-                                    handleMemberChange(index, 'name', e.target.value)
-                                  }
-                                  placeholder="Full name"
-                                  className={inputClass(errors[`memberName-${index}`])}
-                                />
-                                {errors[`memberName-${index}`] && (
-                                  <p className="text-red-400 text-xs mt-1">
-                                    {errors[`memberName-${index}`]}
-                                  </p>
-                                )}
+                          <div>
+                            <label className="text-xs text-gray-400 font-medium mb-1.5 flex items-center gap-1.5">
+                              <Star className="w-3 h-3 text-amber-400" /> Sport *
+                            </label>
+                            <div className="relative">
+                              <select
+                                name="sport"
+                                value={formData.sport}
+                                onChange={handleChange}
+                                className={`${inputClass(errors.sport)} appearance-none cursor-pointer`}
+                              >
+                                <option value="" className="bg-[#0f0518]">
+                                  Choose sport...
+                                </option>
+                                {sports.map((sport) => (
+                                  <option key={sport.id} value={sport.name} className="bg-[#0f0518]">
+                                    {sport.name} ({sport.teamSize}P) - ₹{sport.fee}
+                                  </option>
+                                ))}
+                              </select>
+                              <ChevronRight className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 rotate-90 pointer-events-none" />
+                            </div>
+                            {errors.sport && (
+                              <p className="text-red-400 text-xs mt-1">{errors.sport}</p>
+                            )}
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                              <label className="text-xs text-gray-400 font-medium mb-1.5 flex items-center gap-1.5">
+                                <User className="w-3 h-3 text-emerald-400" /> Captain Name *
+                              </label>
+                              <input
+                                type="text"
+                                name="captainName"
+                                value={formData.captainName}
+                                onChange={handleChange}
+                                placeholder="Full name"
+                                className={inputClass(errors.captainName)}
+                              />
+                              {errors.captainName && (
+                                <p className="text-red-400 text-xs mt-1">{errors.captainName}</p>
+                              )}
+                            </div>
+                            <div>
+                              <label className="text-xs text-gray-400 font-medium mb-1.5 flex items-center gap-1.5">
+                                <Phone className="w-3 h-3 text-cyan-400" /> Captain Mobile *
+                              </label>
+                              <input
+                                type="tel"
+                                name="captainMobile"
+                                value={formData.captainMobile}
+                                onChange={handleChange}
+                                placeholder="10-digit number"
+                                maxLength={10}
+                                className={inputClass(errors.captainMobile)}
+                              />
+                              {errors.captainMobile && (
+                                <p className="text-red-400 text-xs mt-1">{errors.captainMobile}</p>
+                              )}
+                            </div>
+                          </div>
+
+                          <motion.button
+                            type="button"
+                            onClick={handleNext}
+                            whileHover={{ scale: 1.01, y: -1 }}
+                            whileTap={{ scale: 0.99 }}
+                            className="w-full py-3.5 mt-2 rounded-xl text-sm font-bold text-white relative overflow-hidden group cursor-pointer"
+                            style={{
+                              background: 'linear-gradient(135deg, #9333ea 0%, #c026d3 50%, #7c3aed 100%)',
+                            }}
+                          >
+                            <span className="relative z-10 flex items-center justify-center gap-2">
+                              Continue{' '}
+                              <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+                            </span>
+                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
+                          </motion.button>
+                          </motion.div>
+                        ) : step === 2 ? (
+                          <motion.div
+                            key="step2"
+                            custom={direction}
+                            variants={slideVariants}
+                            initial="enter"
+                            animate="center"
+                            exit="exit"
+                            className="space-y-5"
+                          >
+                            <div className="flex items-center gap-3 mb-5">
+                              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-600 to-purple-600 flex items-center justify-center shadow-lg shadow-violet-500/25">
+                                <FileText className="w-5 h-5 text-white" />
                               </div>
-
-                              {/* Player Files */}
-                              <div className="grid grid-cols-2 gap-3">
-                                {/* Aadhaar */}
-                                <div>
-                                  <label className="text-xs text-gray-500 mb-1 block">
-                                    Aadhaar *
-                                  </label>
-                                  <input
-                                    type="file"
-                                    accept="image/jpeg,image/jpg,image/png"
-                                    onChange={(e) => {
-                                      const f = handleImageFileChange(e.target.files[0]);
-                                      if (f) handleMemberChange(index, 'aadhaar', f);
-                                    }}
-                                    className={fileInputClass}
-                                  />
-                                  {member.aadhaar && (
-                                    <p className="text-emerald-400 text-[10px] mt-1 truncate">
-                                      <Check className="w-2.5 h-2.5 inline" />{' '}
-                                      {member.aadhaar.name}
-                                    </p>
-                                  )}
-                                  {errors[`memberAadhaar-${index}`] && (
-                                    <p className="text-red-400 text-[10px] mt-1">
-                                      {errors[`memberAadhaar-${index}`]}
-                                    </p>
-                                  )}
-                                  <p className="text-gray-500 text-[9px] mt-1">
-                                    PNG/JPEG (Max 5MB)
-                                  </p>
-                                </div>
-
-                                {/* ID Card */}
-                                <div>
-                                  <label className="text-xs text-gray-500 mb-1 block">
-                                    ID Card *
-                                  </label>
-                                  <input
-                                    type="file"
-                                    accept="image/jpeg,image/jpg,image/png"
-                                    onChange={(e) => {
-                                      const f = handleImageFileChange(e.target.files[0]);
-                                      if (f) handleMemberChange(index, 'idCard', f);
-                                    }}
-                                    className={fileInputClass}
-                                  />
-                                  {member.idCard && (
-                                    <p className="text-emerald-400 text-[10px] mt-1 truncate">
-                                      <Check className="w-2.5 h-2.5 inline" />{' '}
-                                      {member.idCard.name}
-                                    </p>
-                                  )}
-                                  {errors[`memberIdCard-${index}`] && (
-                                    <p className="text-red-400 text-[10px] mt-1">
-                                      {errors[`memberIdCard-${index}`]}
-                                    </p>
-                                  )}
-                                  <p className="text-gray-500 text-[9px] mt-1">
-                                    PNG/JPEG (Max 5MB)
-                                  </p>
-                                </div>
+                              <div>
+                                <h3 className="text-lg font-bold text-white">Documents</h3>
+                                <p className="text-gray-500 text-xs">Verification files</p>
                               </div>
                             </div>
-                          </motion.div>
-                        ))}
-                      </div>
-                    )}
 
-                    {/* Step 2 Buttons */}
-                    <div className="flex gap-3 pt-2">
-                      <button
-                        type="button"
-                        onClick={() => setStep(1)}
-                        className="flex-1 py-3 rounded-xl text-sm font-semibold text-gray-400 bg-white/[0.03] border border-white/10 hover:bg-white/[0.05] transition-all"
-                      >
-                        ← Back
-                      </button>
-                      <motion.button
-                        type="button"
-                        onClick={handleNext}
-                        whileHover={{ scale: 1.01, y: -1 }}
-                        whileTap={{ scale: 0.99 }}
-                        className="flex-1 py-3 rounded-xl text-sm font-bold text-white relative overflow-hidden group"
-                        style={{
-                          background:
-                            'linear-gradient(135deg, #9333ea 0%, #c026d3 50%, #7c3aed 100%)',
-                        }}
-                      >
-                        <span className="relative z-10 flex items-center justify-center gap-2">
-                          Continue{' '}
-                          <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
-                        </span>
-                      </motion.button>
-                    </div>
-                  </motion.div>
-                )}
-
-                {/* ══════ STEP 3: PAYMENT ══════ */}
-                {!submitted && step === 3 && (
-                  <motion.div
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    className="space-y-5"
-                  >
-                    <div className="flex items-center gap-3 mb-5">
-                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-lg shadow-amber-500/25">
-                        <CreditCard className="w-5 h-5 text-white" />
-                      </div>
-                      <div>
-                        <h3 className="text-lg font-bold text-white">Payment</h3>
-                        <p className="text-gray-500 text-xs">Complete registration</p>
-                      </div>
-                    </div>
-
-                    {/* QR + Upload */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      {/* QR Code */}
-                      <div
-                        className="rounded-2xl p-4 text-center"
-                        style={{
-                          background:
-                            'linear-gradient(135deg, rgba(245,158,11,0.1) 0%, rgba(251,146,60,0.05) 100%)',
-                          border: '1px solid rgba(245,158,11,0.2)',
-                        }}
-                      >
-                        <div className="flex items-center justify-center gap-1.5 mb-3">
-                          <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                          <span className="text-xs font-semibold text-amber-400">
-                            Scan QR Code
-                          </span>
-                        </div>
-                        {formData.sport ? (
-                          <div className="w-36 h-36 mx-auto bg-white rounded-xl overflow-hidden mb-3 shadow-lg">
-                            <img
-                              src={sportQRMapping[formData.sport]}
-                              alt="QR Code"
-                              className="w-full h-full object-contain"
-                              onError={(e) => {
-                                e.currentTarget.src =
-                                  'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iI2ZmZiIvPjx0ZXh0IHg9IjEwMCIgeT0iMTAwIiBmb250LXNpemU9IjE0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5RUjwvdGV4dD48L3N2Zz4=';
-                              }}
-                            />
-                          </div>
-                        ) : (
-                          <div className="w-36 h-36 mx-auto bg-white/5 rounded-xl border-2 border-dashed border-amber-500/30 flex items-center justify-center mb-3">
-                            <p className="text-gray-500 text-xs">Select sport first</p>
-                          </div>
-                        )}
-                        <p className="text-3xl font-black text-amber-400">
-                          ₹{selectedSportFee}
-                        </p>
-                      </div>
-
-                      {/* Upload Area */}
-                      <div className="space-y-3">
-                        <motion.div
-                          whileHover={{ scale: 1.01 }}
-                          className={`relative rounded-xl p-5 border-2 border-dashed transition-all cursor-pointer ${
-                            errors.payment
-                              ? 'border-red-500/40 bg-red-500/5'
-                              : paymentScreenshot
-                                ? 'border-emerald-500/40 bg-emerald-500/5'
-                                : 'border-purple-500/20 bg-white/[0.02] hover:border-purple-500/40'
-                          }`}
-                        >
-                          <input
-                            type="file"
-                            accept="image/jpeg,image/jpg,image/png"
-                            onChange={(e) => {
-                              const f = handleImageFileChange(e.target.files[0]);
-                              if (f) {
-                                setPaymentScreenshot(f);
-                                setPaymentCompleted(true);
-                                if (errors.payment)
-                                  setErrors((prev) => ({ ...prev, payment: '' }));
-                              }
-                            }}
-                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                          />
-                          <div className="flex flex-col items-center">
-                            {paymentScreenshot ? (
-                              <CheckCircle2 className="w-8 h-8 text-emerald-400 mb-1" />
-                            ) : (
-                              <Upload className="w-8 h-8 text-purple-400 mb-1" />
+                            {/* Selected Sport Info Banner */}
+                            {formData.sport && (
+                              <div className="flex flex-wrap items-center justify-between gap-3 p-4 rounded-2xl bg-purple-950/20 border border-purple-500/10 mb-6">
+                                <div>
+                                  <p className="text-[10px] text-purple-400 uppercase tracking-wider font-bold">Selected Sport</p>
+                                  <p className="text-base font-extrabold text-white">{formData.sport}</p>
+                                </div>
+                                <div className="flex gap-4">
+                                  <div className="text-right">
+                                    <p className="text-[9px] text-gray-500 uppercase tracking-wider">Required Team Size</p>
+                                    <p className="text-sm font-extrabold text-white">
+                                      {sports.find(s => s.name === formData.sport)?.teamSize} Players
+                                    </p>
+                                  </div>
+                                  <div className="text-right">
+                                    <p className="text-[9px] text-gray-500 uppercase tracking-wider">Fee</p>
+                                    <p className="text-sm font-extrabold text-amber-400">
+                                      ₹{sports.find(s => s.name === formData.sport)?.fee}
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
                             )}
-                            <span className="text-xs text-gray-400">
-                              {paymentScreenshot ? 'Uploaded!' : 'Upload Screenshot'}
-                            </span>
-                            {paymentScreenshot && (
-                              <span className="text-[10px] text-emerald-400 mt-1 truncate max-w-full">
-                                {paymentScreenshot.name}
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                              <div>
+                                <label className="text-xs text-gray-400 font-medium mb-1.5 flex items-center gap-1.5">
+                                  <Shield className="w-3 h-3 text-purple-400" /> Captain Aadhaar *
+                                </label>
+                                <div 
+                                onClick={() => document.getElementById('captainAadhaarInput').click()}
+                                className={`relative rounded-xl p-4 border-2 border-dashed transition-all cursor-pointer text-center ${
+                                  errors.captainAadhaar
+                                    ? 'border-red-500/40 bg-red-500/5 hover:border-red-500/60'
+                                    : captainAadhaar
+                                      ? 'border-emerald-500/40 bg-emerald-500/5 hover:border-emerald-500/60'
+                                      : 'border-purple-500/20 bg-white/[0.02] hover:border-purple-500/40 hover:bg-white/[0.04]'
+                                }`}
+                              >
+                                <input
+                                  id="captainAadhaarInput"
+                                  type="file"
+                                  accept="image/jpeg,image/jpg,image/png"
+                                  onChange={(e) => {
+                                    const f = handleImageFileChange(e.target.files[0]);
+                                    if (f) {
+                                      setCaptainAadhaar(f);
+                                      if (errors.captainAadhaar) setErrors(prev => ({ ...prev, captainAadhaar: '' }));
+                                    }
+                                  }}
+                                  onClick={(e) => e.stopPropagation()}
+                                  className="hidden"
+                                />
+                                <div className="flex flex-col items-center justify-center py-2">
+                                  {captainAadhaar ? (
+                                    <CheckCircle2 className="w-7 h-7 text-emerald-400 mb-1" />
+                                  ) : (
+                                    <Upload className="w-7 h-7 text-purple-400 mb-1" />
+                                  )}
+                                  <span className="text-xs text-gray-300 font-bold">
+                                    {captainAadhaar ? 'Aadhaar Uploaded' : 'Upload Aadhaar'}
+                                  </span>
+                                  <span className="text-[9px] text-gray-500 mt-0.5 truncate max-w-full block">
+                                    {captainAadhaar ? captainAadhaar.name : 'PNG/JPEG (Max 5MB)'}
+                                  </span>
+                                </div>
+                              </div>
+                              {errors.captainAadhaar && (
+                                <p className="text-red-400 text-xs mt-1">{errors.captainAadhaar}</p>
+                              )}
+                            </div>
+                            <div>
+                              <label className="text-xs text-gray-400 font-medium mb-1.5 flex items-center gap-1.5">
+                                <Shield className="w-3 h-3 text-blue-400" /> College ID *
+                              </label>
+                              <div 
+                                onClick={() => document.getElementById('captainIdInput').click()}
+                                className={`relative rounded-xl p-4 border-2 border-dashed transition-all cursor-pointer text-center ${
+                                  errors.captainId
+                                    ? 'border-red-500/40 bg-red-500/5 hover:border-red-500/60'
+                                    : captainId
+                                      ? 'border-emerald-500/40 bg-emerald-500/5 hover:border-emerald-500/60'
+                                      : 'border-purple-500/20 bg-white/[0.02] hover:border-purple-500/40 hover:bg-white/[0.04]'
+                                }`}
+                              >
+                                <input
+                                  id="captainIdInput"
+                                  type="file"
+                                  accept="image/jpeg,image/jpg,image/png"
+                                  onChange={(e) => {
+                                    const f = handleImageFileChange(e.target.files[0]);
+                                    if (f) {
+                                      setCaptainId(f);
+                                      if (errors.captainId) setErrors(prev => ({ ...prev, captainId: '' }));
+                                    }
+                                  }}
+                                  onClick={(e) => e.stopPropagation()}
+                                  className="hidden"
+                                />
+                                <div className="flex flex-col items-center justify-center py-2">
+                                  {captainId ? (
+                                    <CheckCircle2 className="w-7 h-7 text-emerald-400 mb-1" />
+                                  ) : (
+                                    <Upload className="w-7 h-7 text-blue-400 mb-1" />
+                                  )}
+                                  <span className="text-xs text-gray-300 font-bold">
+                                    {captainId ? 'College ID Uploaded' : 'Upload College ID'}
+                                  </span>
+                                  <span className="text-[9px] text-gray-500 mt-0.5 truncate max-w-full block">
+                                    {captainId ? captainId.name : 'PNG/JPEG (Max 5MB)'}
+                                  </span>
+                                </div>
+                              </div>
+                              {errors.captainId && (
+                                <p className="text-red-400 text-xs mt-1">{errors.captainId}</p>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Team Members */}
+                          {teamMembers.length > 0 && (
+                            <div className="space-y-4 mt-6 pt-6 border-t border-white/5">
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-600 to-blue-600 flex items-center justify-center">
+                                    <Users className="w-4 h-4 text-white" />
+                                  </div>
+                                  <h3 className="text-base font-bold text-white">Team Members</h3>
+                                </div>
+                                <motion.button
+                                  type="button"
+                                  onClick={addTeamMember}
+                                  whileHover={{ scale: 1.05 }}
+                                  whileTap={{ scale: 0.95 }}
+                                  className="flex items-center gap-1 px-3 py-1.5 bg-purple-500/20 text-purple-300 rounded-lg text-xs font-semibold border border-purple-500/20 hover:bg-purple-500/30 transition-all cursor-pointer"
+                                >
+                                  <Plus className="w-3 h-3" /> Add
+                                </motion.button>
+                              </div>
+
+                              <div className="space-y-3 max-h-[400px] overflow-y-auto pr-1 custom-scrollbar">
+                                {teamMembers.map((member, index) => (
+                                  <motion.div
+                                    key={member.id}
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="p-3 rounded-xl border border-purple-500/10 bg-white/[0.01] hover:bg-white/[0.02] hover:border-purple-500/20 transition-all duration-300"
+                                  >
+                                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+                                      {/* Player Label & Name Input */}
+                                      <div className="flex-1 flex items-center gap-3">
+                                        <span className="text-xs font-bold text-purple-400 min-w-[65px] flex-shrink-0">
+                                          Player {index + 1}
+                                        </span>
+                                        <div className="flex-1">
+                                          <input
+                                            type="text"
+                                            value={member.name}
+                                            onChange={(e) => handleMemberChange(index, 'name', e.target.value)}
+                                            placeholder="Full name"
+                                            className={inputClass(errors[`memberName-${index}`])}
+                                          />
+                                          {errors[`memberName-${index}`] && (
+                                            <p className="text-red-400 text-[10px] mt-1 ml-1 font-medium">
+                                              {errors[`memberName-${index}`]}
+                                            </p>
+                                          )}
+                                        </div>
+                                      </div>
+
+                                      {/* Upload Buttons */}
+                                      <div className="flex gap-2 sm:w-[320px] flex-shrink-0">
+                                        {/* Aadhaar */}
+                                        <div className="flex-1">
+                                          <div 
+                                            onClick={() => document.getElementById(`memberAadhaar-${index}`).click()}
+                                            className={`relative h-11 px-3 rounded-xl border-2 border-dashed flex items-center justify-center gap-2 transition-all cursor-pointer text-xs ${
+                                              errors[`memberAadhaar-${index}`]
+                                                ? 'border-red-500/40 bg-red-500/5 hover:border-red-500/60'
+                                                : member.aadhaar
+                                                  ? 'border-emerald-500/40 bg-emerald-500/5 text-emerald-400 hover:border-emerald-500/60 font-semibold'
+                                                  : 'border-purple-500/20 bg-white/[0.01] text-gray-400 hover:border-purple-500/40 hover:bg-white/[0.03]'
+                                            }`}
+                                          >
+                                            <input
+                                              id={`memberAadhaar-${index}`}
+                                              type="file"
+                                              accept="image/jpeg,image/jpg,image/png"
+                                              onChange={(e) => {
+                                                const f = handleImageFileChange(e.target.files[0]);
+                                                if (f) handleMemberChange(index, 'aadhaar', f);
+                                              }}
+                                              onClick={(e) => e.stopPropagation()}
+                                              className="hidden"
+                                            />
+                                            {member.aadhaar ? (
+                                              <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                                            ) : (
+                                              <Upload className="w-4 h-4 text-purple-400/70 flex-shrink-0" />
+                                            )}
+                                            <span className="truncate max-w-[80px] font-medium">
+                                              {member.aadhaar ? member.aadhaar.name : 'Aadhaar'}
+                                            </span>
+                                          </div>
+                                          {errors[`memberAadhaar-${index}`] && (
+                                            <p className="text-red-400 text-[9px] mt-0.5 ml-1 font-medium text-center">
+                                              {errors[`memberAadhaar-${index}`]}
+                                            </p>
+                                          )}
+                                        </div>
+
+                                        {/* ID Card */}
+                                        <div className="flex-1">
+                                          <div 
+                                            onClick={() => document.getElementById(`memberIdCard-${index}`).click()}
+                                            className={`relative h-11 px-3 rounded-xl border-2 border-dashed flex items-center justify-center gap-2 transition-all cursor-pointer text-xs ${
+                                              errors[`memberIdCard-${index}`]
+                                                ? 'border-red-500/40 bg-red-500/5 hover:border-red-500/60'
+                                                : member.idCard
+                                                  ? 'border-emerald-500/40 bg-emerald-500/5 text-emerald-400 hover:border-emerald-500/60 font-semibold'
+                                                  : 'border-purple-500/20 bg-white/[0.01] text-gray-400 hover:border-purple-500/40 hover:bg-white/[0.03]'
+                                            }`}
+                                          >
+                                            <input
+                                              id={`memberIdCard-${index}`}
+                                              type="file"
+                                              accept="image/jpeg,image/jpg,image/png"
+                                              onChange={(e) => {
+                                                const f = handleImageFileChange(e.target.files[0]);
+                                                if (f) handleMemberChange(index, 'idCard', f);
+                                              }}
+                                              onClick={(e) => e.stopPropagation()}
+                                              className="hidden"
+                                            />
+                                            {member.idCard ? (
+                                              <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                                            ) : (
+                                              <Upload className="w-4 h-4 text-blue-400/70 flex-shrink-0" />
+                                            )}
+                                            <span className="truncate max-w-[80px] font-medium">
+                                              {member.idCard ? member.idCard.name : 'ID Card'}
+                                            </span>
+                                          </div>
+                                          {errors[`memberIdCard-${index}`] && (
+                                            <p className="text-red-400 text-[9px] mt-0.5 ml-1 font-medium text-center">
+                                              {errors[`memberIdCard-${index}`]}
+                                            </p>
+                                          )}
+                                        </div>
+                                      </div>
+
+                                      {/* Remove Button */}
+                                      {teamMembers.length > 1 && (
+                                        <div className="flex justify-end flex-shrink-0">
+                                          <motion.button
+                                            type="button"
+                                            onClick={() => removeTeamMember(index)}
+                                            whileHover={{ scale: 1.05 }}
+                                            whileTap={{ scale: 0.95 }}
+                                            className="w-9 h-9 bg-red-600/10 rounded-xl flex items-center justify-center text-red-400 border border-red-500/10 hover:border-red-500/30 transition-all cursor-pointer"
+                                          >
+                                            <X className="w-4 h-4" />
+                                          </motion.button>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </motion.div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Step 2 Buttons */}
+                          <div className="flex gap-3 pt-2">
+                            <button
+                              type="button"
+                              onClick={() => { setDirection(-1); setStep(1); }}
+                              className="flex-1 py-3 rounded-xl text-sm font-semibold text-gray-400 bg-white/[0.03] border border-white/10 hover:bg-white/[0.05] transition-all cursor-pointer"
+                            >
+                              ← Back
+                            </button>
+                            <motion.button
+                              type="button"
+                              onClick={handleNext}
+                              whileHover={{ scale: 1.01, y: -1 }}
+                              whileTap={{ scale: 0.99 }}
+                              className="flex-1 py-3 rounded-xl text-sm font-bold text-white relative overflow-hidden group cursor-pointer"
+                              style={{
+                                background: 'linear-gradient(135deg, #9333ea 0%, #c026d3 50%, #7c3aed 100%)',
+                              }}
+                            >
+                              <span className="relative z-10 flex items-center justify-center gap-2">
+                                Continue{' '}
+                                <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
                               </span>
+                            </motion.button>
+                          </div>
+                          </motion.div>
+                        ) : (
+                          <motion.div
+                            key="step3"
+                            custom={direction}
+                            variants={slideVariants}
+                            initial="enter"
+                            animate="center"
+                            exit="exit"
+                            className="space-y-5"
+                          >
+                          <div className="flex items-center gap-3 mb-5">
+                            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-lg shadow-amber-500/25">
+                              <CreditCard className="w-5 h-5 text-white" />
+                            </div>
+                            <div>
+                              <h3 className="text-lg font-bold text-white">Payment</h3>
+                              <p className="text-gray-500 text-xs">Complete registration</p>
+                            </div>
+                          </div>
+
+                          {/* QR + Upload */}
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            {/* QR Code */}
+                            <div
+                              className="rounded-2xl p-4 text-center"
+                              style={{
+                                background: 'linear-gradient(135deg, rgba(245,158,11,0.1) 0%, rgba(251,146,60,0.05) 100%)',
+                                border: '1px solid rgba(245,158,11,0.2)',
+                              }}
+                            >
+                              <div className="flex items-center justify-center gap-1.5 mb-3">
+                                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                                <span className="text-xs font-semibold text-amber-400">
+                                  Scan QR Code
+                                </span>
+                              </div>
+                              {formData.sport ? (
+                                <div className="w-36 h-36 mx-auto bg-white rounded-xl overflow-hidden mb-3 shadow-lg">
+                                  <img
+                                    src={sportQRMapping[formData.sport]}
+                                    alt="QR Code"
+                                    className="w-full h-full object-contain"
+                                    onError={(e) => {
+                                      e.currentTarget.src =
+                                        'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iI2ZmZiIvPjx0ZXh0IHg9IjEwMCIgeT0iMTAwIiBmb250LXNpemU9IjE0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5RUjwvdGV4dD48L3N2Zz4=';
+                                    }}
+                                  />
+                                </div>
+                              ) : (
+                                <div className="w-36 h-36 mx-auto bg-white/5 rounded-xl border-2 border-dashed border-amber-500/30 flex items-center justify-center mb-3">
+                                  <p className="text-gray-500 text-xs">Select sport first</p>
+                                </div>
+                              )}
+                              <p className="text-3xl font-black text-amber-400">
+                                ₹{selectedSportFee}
+                              </p>
+                            </div>
+
+                            {/* Upload Area */}
+                            <div className="space-y-3">
+                              <motion.div
+                                whileHover={{ scale: 1.01 }}
+                                className={`relative rounded-xl p-5 border-2 border-dashed transition-all cursor-pointer ${
+                                  errors.payment
+                                    ? 'border-red-500/40 bg-red-500/5'
+                                    : paymentScreenshot
+                                      ? 'border-emerald-500/40 bg-emerald-500/5'
+                                      : 'border-purple-500/20 bg-white/[0.02] hover:border-purple-500/40'
+                                }`}
+                              >
+                                <input
+                                  type="file"
+                                  accept="image/jpeg,image/jpg,image/png"
+                                  onChange={(e) => {
+                                    const f = handleImageFileChange(e.target.files[0]);
+                                    if (f) {
+                                      setPaymentScreenshot(f);
+                                      setPaymentCompleted(true);
+                                      if (errors.payment)
+                                        setErrors((prev) => ({ ...prev, payment: '' }));
+                                    }
+                                  }}
+                                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                />
+                                <div className="flex flex-col items-center">
+                                  {paymentScreenshot ? (
+                                    <CheckCircle2 className="w-8 h-8 text-emerald-400 mb-1" />
+                                  ) : (
+                                    <Upload className="w-8 h-8 text-purple-400 mb-1" />
+                                  )}
+                                  <span className="text-xs text-gray-400">
+                                    {paymentScreenshot ? 'Uploaded!' : 'Upload Screenshot'}
+                                  </span>
+                                  {paymentScreenshot && (
+                                    <span className="text-[10px] text-emerald-400 mt-1 truncate max-w-full block">
+                                      {paymentScreenshot.name}
+                                    </span>
+                                  )}
+                                </div>
+                              </motion.div>
+                              {errors.payment && (
+                                <p className="text-red-400 text-xs">{errors.payment}</p>
+                              )}
+                              <p className="text-gray-500 text-xs">PNG/JPEG only (Max 5MB)</p>
+
+                              <div
+                                className="rounded-xl p-3"
+                                style={{
+                                  background: 'linear-gradient(135deg, rgba(245,158,11,0.1) 0%, rgba(251,146,60,0.05) 100%)',
+                                  border: '1px solid rgba(245,158,11,0.15)',
+                                }}
+                              >
+                                <p className="text-amber-400 text-[10px] font-semibold mb-1.5">
+                                  Payment Steps:
+                                </p>
+                                <ol className="text-gray-400 text-[9px] space-y-0.5 list-decimal list-inside">
+                                  <li>Scan QR &amp; pay ₹{selectedSportFee}</li>
+                                  <li>Take screenshot of payment</li>
+                                  <li>Upload above</li>
+                                </ol>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Step 3 Buttons */}
+                          <div className="flex gap-3 pt-2">
+                            <button
+                              type="button"
+                              onClick={() => { setDirection(-1); setStep(2); }}
+                              className="flex-1 py-3 rounded-xl text-sm font-semibold text-gray-400 bg-white/[0.03] border border-white/10 hover:bg-white/[0.05] transition-all cursor-pointer"
+                            >
+                              ← Back
+                            </button>
+                            {paymentCompleted ? (
+                              <motion.button
+                                type="submit"
+                                disabled={isSubmitting}
+                                whileHover={{ scale: 1.01 }}
+                                whileTap={{ scale: 0.99 }}
+                                className="flex-1 py-3 rounded-xl text-sm font-bold text-white disabled:opacity-60 flex items-center justify-center gap-2 cursor-pointer"
+                                style={{
+                                  background: 'linear-gradient(135deg, #9333ea 0%, #c026d3 50%, #7c3aed 100%)',
+                                }}
+                              >
+                                {isSubmitting ? (
+                                  <>
+                                    <motion.div
+                                      animate={{ rotate: 360 }}
+                                      transition={{
+                                        duration: 1,
+                                        repeat: Infinity,
+                                        ease: 'linear',
+                                      }}
+                                      className="w-4 h-4 border-2 border-white border-t-transparent rounded-full"
+                                    />
+                                    Submitting...
+                                  </>
+                                ) : (
+                                  <>
+                                    <Sparkles className="w-4 h-4" /> Register Team
+                                  </>
+                                )}
+                              </motion.button>
+                            ) : (
+                              <div className="flex-1 py-3 rounded-xl text-sm font-semibold text-gray-600 bg-white/[0.02] border border-dashed border-white/10 text-center">
+                                Upload payment first
+                              </div>
                             )}
                           </div>
                         </motion.div>
-                        {errors.payment && (
-                          <p className="text-red-400 text-xs">{errors.payment}</p>
-                        )}
-                        <p className="text-gray-500 text-xs">PNG/JPEG only (Max 5MB)</p>
-
-                        <div
-                          className="rounded-xl p-3"
-                          style={{
-                            background:
-                              'linear-gradient(135deg, rgba(245,158,11,0.1) 0%, rgba(251,146,60,0.05) 100%)',
-                            border: '1px solid rgba(245,158,11,0.15)',
-                          }}
-                        >
-                          <p className="text-amber-400 text-[10px] font-semibold mb-1.5">
-                            Payment Steps:
-                          </p>
-                          <ol className="text-gray-400 text-[9px] space-y-0.5 list-decimal list-inside">
-                            <li>Scan QR &amp; pay ₹{selectedSportFee}</li>
-                            <li>Take screenshot of payment</li>
-                            <li>Upload above</li>
-                          </ol>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Step 3 Buttons */}
-                    <div className="flex gap-3 pt-2">
-                      <button
-                        type="button"
-                        onClick={() => setStep(2)}
-                        className="flex-1 py-3 rounded-xl text-sm font-semibold text-gray-400 bg-white/[0.03] border border-white/10 hover:bg-white/[0.05] transition-all"
-                      >
-                        ← Back
-                      </button>
-                      {paymentCompleted ? (
-                        <motion.button
-                          type="submit"
-                          disabled={isSubmitting}
-                          whileHover={{ scale: 1.01 }}
-                          whileTap={{ scale: 0.99 }}
-                          className="flex-1 py-3 rounded-xl text-sm font-bold text-white disabled:opacity-60 flex items-center justify-center gap-2"
-                          style={{
-                            background:
-                              'linear-gradient(135deg, #9333ea 0%, #c026d3 50%, #7c3aed 100%)',
-                          }}
-                        >
-                          {isSubmitting ? (
-                            <>
-                              <motion.div
-                                animate={{ rotate: 360 }}
-                                transition={{
-                                  duration: 1,
-                                  repeat: Infinity,
-                                  ease: 'linear',
-                                }}
-                                className="w-4 h-4 border-2 border-white border-t-transparent rounded-full"
-                              />
-                              Submitting...
-                            </>
-                          ) : (
-                            <>
-                              <Sparkles className="w-4 h-4" /> Register Team
-                            </>
-                          )}
-                        </motion.button>
-                      ) : (
-                        <div className="flex-1 py-3 rounded-xl text-sm font-semibold text-gray-600 bg-white/[0.02] border border-dashed border-white/10 text-center">
-                          Upload payment first
-                        </div>
                       )}
+                    </AnimatePresence>
                     </div>
-                  </motion.div>
-                )}
-              </div>
+                  </div>
             </div>
-          </div>
-        </motion.form>
-          </>
-        ) : (
+          </motion.form>
+
+          {/* Guidelines */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="relative mt-8"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="mt-6"
           >
-            <div className="absolute -inset-[1px] bg-gradient-to-r from-purple-600/20 via-fuchsia-600/20 to-violet-600/20 rounded-3xl blur-sm" />
             <div
-              className="relative rounded-3xl p-8 text-center space-y-6 border border-purple-500/10"
-              style={{
-                background: 'linear-gradient(180deg, rgba(15,5,25,0.95) 0%, rgba(10,3,20,0.98) 100%)',
-              }}
+              className="rounded-2xl p-4 border border-purple-500/10 bg-gradient-to-br from-purple-950/20 via-transparent to-violet-950/10 backdrop-blur-md"
             >
-              <div className="w-16 h-16 rounded-full bg-purple-500/10 border border-purple-500/20 flex items-center justify-center mx-auto shadow-lg shadow-purple-500/10">
-                <AlertCircle className="w-8 h-8 text-purple-400" />
+              <div className="flex items-center gap-2 mb-3">
+                <Star className="w-4 h-4 text-purple-400" />
+                <span className="text-xs font-bold text-purple-300">Registration Guidelines</span>
               </div>
-              <div className="space-y-2">
-                <h3 className="text-2xl font-black text-white font-display uppercase tracking-wider">Registration Closed</h3>
-                <p className="text-gray-400 text-sm max-w-md mx-auto leading-relaxed">
-                  We are not accepting online team registrations at this moment. The registration phase has either concluded or hasn&apos;t started yet.
-                </p>
-              </div>
-              <div className="pt-2">
-                <p className="text-xs text-gray-500">
-                  For emergency queries or verification issues, contact support via WhatsApp:
-                </p>
-                <a
-                  href={`https://wa.me/${siteContent.registration?.supportWhatsapp || '9875325878'}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 mt-3 px-5 py-2.5 bg-purple-600/10 hover:bg-purple-600/20 border border-purple-500/20 hover:border-purple-500/40 text-purple-300 hover:text-purple-200 rounded-xl text-xs font-bold transition-all"
-                >
-                  <Phone className="w-3.5 h-3.5" /> Contact Support WhatsApp
-                </a>
+              <div className="grid grid-cols-2 gap-3">
+                {[
+                  'All fields are mandatory',
+                  'Enter a valid 10-digit mobile',
+                  'Upload clear document screenshots',
+                  'Registration fees are non-refundable'
+                ].map((g, i) => (
+                  <div key={i} className="flex items-center gap-2 text-xs text-gray-400">
+                    <div className="w-1.5 h-1.5 rounded-full bg-purple-500 flex-shrink-0" />
+                    {g}
+                  </div>
+                ))}
               </div>
             </div>
           </motion.div>
-        )}
-
-        {/* Guidelines */}
+        </div>
+      ) : (
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.3 }}
-          className="mt-6"
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="relative mt-8"
         >
+          <div className="absolute -inset-[1px] bg-gradient-to-r from-purple-600/20 via-fuchsia-600/20 to-violet-600/20 rounded-3xl blur-sm" />
           <div
-            className="rounded-2xl p-4 border border-purple-500/10"
+            className="relative rounded-3xl p-8 text-center space-y-6 border border-purple-500/10"
             style={{
-              background:
-                'linear-gradient(135deg, rgba(147,51,234,0.05) 0%, rgba(139,92,246,0.02) 100%)',
+              background: 'linear-gradient(180deg, rgba(15,5,25,0.95) 0%, rgba(10,3,20,0.98) 100%)',
             }}
           >
-            <div className="flex items-center gap-2 mb-3">
-              <Star className="w-4 h-4 text-purple-400" />
-              <span className="text-xs font-bold text-purple-300">Guidelines</span>
+            <div className="w-16 h-16 rounded-full bg-purple-500/10 border border-purple-500/20 flex items-center justify-center mx-auto shadow-lg shadow-purple-500/10">
+              <AlertCircle className="w-8 h-8 text-purple-400" />
             </div>
-            <div className="grid grid-cols-2 gap-2">
-              {['All fields required', '10-digit mobile', 'Valid documents', 'Non-refundable'].map(
-                (g, i) => (
-                  <div key={i} className="flex items-center gap-2 text-[10px] text-gray-500">
-                    <div className="w-1 h-1 rounded-full bg-purple-500" />
-                    {g}
-                  </div>
-                )
-              )}
+            <div className="space-y-2">
+              <h3 className="text-2xl font-black text-white font-display uppercase tracking-wider">Registration Closed</h3>
+              <p className="text-gray-400 text-sm max-w-md mx-auto leading-relaxed">
+                We are not accepting online team registrations at this moment. The registration phase has either concluded or hasn&apos;t started yet.
+              </p>
+            </div>
+            <div className="pt-2">
+              <p className="text-xs text-gray-500">
+                For emergency queries or verification issues, contact support via WhatsApp:
+              </p>
+              <a
+                href={`https://wa.me/${siteContent.registration?.supportWhatsapp || '9875325878'}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 mt-3 px-5 py-2.5 bg-purple-600/10 hover:bg-purple-600/20 border border-purple-500/20 hover:border-purple-500/40 text-purple-300 hover:text-purple-200 rounded-xl text-xs font-bold transition-all"
+              >
+                <Phone className="w-3.5 h-3.5" /> Contact Support WhatsApp
+              </a>
             </div>
           </div>
         </motion.div>
-      </div>
+      )}
+    </div>
 
-      <style jsx global>{`
+      <style>{`
         .custom-scrollbar::-webkit-scrollbar {
           width: 4px;
         }

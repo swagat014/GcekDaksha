@@ -254,7 +254,7 @@ export default function DakshaHero() {
     <div
       ref={heroRef}
       className="relative w-full min-h-[100dvh] flex items-center justify-center overflow-hidden"
-      style={{ background: isMobile ? '#030108' : '#030108' }}
+      style={{ background: isMobile ? '#030108' : '#030108', position: 'relative' }}
     >
       {/* ═══ BACKGROUND ═══ */}
       <div className="absolute inset-0">

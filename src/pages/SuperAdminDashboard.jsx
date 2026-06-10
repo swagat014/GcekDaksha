@@ -9,6 +9,24 @@ import {
   Trash2, Plus, AlertCircle, Eye, EyeOff, Key, FileText
 } from 'lucide-react';
 
+const parsePlayerString = (playerStr) => {
+  if (!playerStr) return { name: '', status: '', sports: '' };
+  const match = playerStr.match(/^([^(]+)\(([^)]+)\)$/);
+  if (!match) {
+    return { name: playerStr.trim(), status: '', sports: '' };
+  }
+  const name = match[1].trim();
+  const rawDetails = match[2].trim();
+  
+  if (rawDetails.startsWith('Already Paid')) {
+    const parts = rawDetails.split('-');
+    const sports = parts[1] ? parts[1].trim() : '';
+    return { name, status: 'Already Paid', sports };
+  }
+  
+  return { name, status: rawDetails, sports: '' };
+};
+
 export default function SuperAdminDashboard() {
   // Navigation & UI States
   const [activeTab, setActiveTab] = useState('admins'); // default tab is admins management
@@ -850,6 +868,7 @@ export default function SuperAdminDashboard() {
                       <tr className="bg-white/[0.02] border-b border-white/[0.04] text-[10px] font-bold text-rose-300 uppercase tracking-widest">
                         <th className="px-6 py-4">Request Team</th>
                         <th className="px-6 py-4">College Name</th>
+                        <th className="px-6 py-4">Sport</th>
                         <th className="px-6 py-4">Roster Count</th>
                         <th className="px-6 py-4">UTR Number</th>
                         <th className="px-6 py-4 font-mono text-center">Status</th>
@@ -866,6 +885,11 @@ export default function SuperAdminDashboard() {
                               <div className="text-[10px] text-gray-500 mt-0.5">Cap: {row.captain_name}</div>
                             </td>
                             <td className="px-6 py-4 text-gray-300">{row.college_name}</td>
+                            <td className="px-6 py-4 text-xs text-gray-300">
+                              <span className="px-2 py-0.5 rounded-full bg-rose-500/10 text-rose-300 border border-rose-500/15 font-bold">
+                                {row.sport || '—'}
+                              </span>
+                            </td>
                             <td className="px-6 py-4">
                               <button
                                 onClick={() => setSelectedPlayersModal({ show: true, players: row.selected_players || [] })}
@@ -958,6 +982,10 @@ export default function SuperAdminDashboard() {
                             <p className="text-[11px] font-bold text-gray-200 truncate">{row.captain_name || '—'}</p>
                           </div>
                           <div className="bg-white/[0.02] rounded-xl p-2.5 border border-white/[0.03]">
+                            <p className="text-[8px] text-gray-600 uppercase tracking-wider font-bold mb-0.5">Sport</p>
+                            <span className="text-[11px] font-bold text-rose-300 truncate">{row.sport || '—'}</span>
+                          </div>
+                          <div className="bg-white/[0.02] rounded-xl p-2.5 border border-white/[0.03]">
                             <p className="text-[8px] text-gray-600 uppercase tracking-wider font-bold mb-0.5">Persons</p>
                             <button
                               onClick={() => setSelectedPlayersModal({ show: true, players: row.selected_players || [] })}
@@ -967,11 +995,11 @@ export default function SuperAdminDashboard() {
                               {row.total_persons} people
                             </button>
                           </div>
-                          <div className="bg-white/[0.02] rounded-xl p-2.5 border border-white/[0.03] col-span-2">
+                          <div className="bg-white/[0.02] rounded-xl p-2.5 border border-white/[0.03]">
                             <p className="text-[8px] text-gray-600 uppercase tracking-wider font-bold mb-0.5">UTR / Transaction No.</p>
-                            <p className="text-[11px] font-mono font-bold text-rose-300 flex items-center gap-1">
-                              <CreditCard className="w-3 h-3 text-gray-500" />
-                              {row.utr_number || 'Not provided'}
+                            <p className="text-[11px] font-mono font-bold text-rose-300 flex items-center gap-1 truncate">
+                              <CreditCard className="w-3 h-3 text-gray-500 flex-shrink-0" />
+                              <span className="truncate">{row.utr_number || 'Not provided'}</span>
                             </p>
                           </div>
                         </div>
@@ -1246,17 +1274,46 @@ export default function SuperAdminDashboard() {
               </div>
 
               <div className="space-y-3.5 max-h-96 overflow-y-auto pr-1">
-                {selectedPlayersModal.players.map((player, index) => (
-                  <div key={index} className="flex items-center gap-3 p-3 bg-white/[0.02] border border-white/[0.04] rounded-xl">
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-rose-500/20 to-purple-500/20 flex items-center justify-center border border-rose-500/10">
-                      <User className="w-4 h-4 text-rose-400" />
+                {selectedPlayersModal.players.map((playerStr, index) => {
+                  const { name, status, sports } = parsePlayerString(playerStr);
+                  return (
+                    <div key={index} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-white/[0.02] border border-white/[0.04] rounded-xl hover:bg-white/[0.04] transition-all">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-rose-500/20 to-purple-500/20 flex items-center justify-center border border-rose-500/10">
+                          <User className="w-4 h-4 text-rose-400" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-white">{name}</p>
+                          <p className="text-[10px] text-gray-500">Participant #{index + 1}</p>
+                          {status === 'Already Paid' && sports && (
+                            <p className="text-[10px] text-rose-400 font-semibold mt-0.5">
+                              🎒 Registered in: {sports}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-end">
+                        {status === 'Already Paid' ? (
+                          <span className="px-2 py-0.5 rounded-md text-[9px] font-black bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                            ✓ Already Paid
+                          </span>
+                        ) : status === 'Cash' ? (
+                          <span className="px-2 py-0.5 rounded-md text-[9px] font-black bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                            💵 Cash
+                          </span>
+                        ) : status === 'UPI' ? (
+                          <span className="px-2 py-0.5 rounded-md text-[9px] font-black bg-purple-500/20 text-purple-400 border border-purple-500/30">
+                            📱 UPI
+                          </span>
+                        ) : status ? (
+                          <span className="px-2 py-0.5 rounded-md text-[9px] font-black bg-blue-500/20 text-blue-400 border border-blue-500/30">
+                            {status}
+                          </span>
+                        ) : null}
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-sm font-semibold text-white">{player}</p>
-                      <p className="text-[10px] text-gray-500">Participant #{index + 1}</p>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </motion.div>
           </motion.div>

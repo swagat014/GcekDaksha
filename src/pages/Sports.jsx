@@ -750,7 +750,7 @@ function Gallery() {
       </AnimatePresence>
 
       {/* Scrollbar hide style */}
-      <style jsx global>{`
+      <style>{`
         .scrollbar-hide::-webkit-scrollbar {
           display: none;
         }

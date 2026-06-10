@@ -11,6 +11,24 @@ import {
 } from 'lucide-react';
 import SiteContentManager from '../components/SiteContentManager';
 
+const parsePlayerString = (playerStr) => {
+  if (!playerStr) return { name: '', status: '', sports: '' };
+  const match = playerStr.match(/^([^(]+)\(([^)]+)\)$/);
+  if (!match) {
+    return { name: playerStr.trim(), status: '', sports: '' };
+  }
+  const name = match[1].trim();
+  const rawDetails = match[2].trim();
+  
+  if (rawDetails.startsWith('Already Paid')) {
+    const parts = rawDetails.split('-');
+    const sports = parts[1] ? parts[1].trim() : '';
+    return { name, status: 'Already Paid', sports };
+  }
+  
+  return { name, status: rawDetails, sports: '' };
+};
+
 export default function AdminDashboard() {
   // Navigation & UI States
   const [activeTab, setActiveTab] = useState('overview');
@@ -211,11 +229,11 @@ export default function AdminDashboard() {
       show: true,
       type,
       id: item.id,
-      name: type === 'team' ? item.team_name : item.team_name,
+      name: item.team_name,
       totalAmount: total,
-      paymentMethod: 'UPI',
-      cashAmount: 0,
-      upiAmount: total
+      paymentMethod: item.payment_method || 'UPI',
+      cashAmount: item.cash_amount || 0,
+      upiAmount: (item.upi_amount !== null && item.upi_amount !== undefined) ? item.upi_amount : total
     });
   };
 
@@ -353,6 +371,163 @@ export default function AdminDashboard() {
       },
       'Delete Accommodation'
     );
+  };
+
+  const handleRequestDelete = async (type, id, name) => {
+    const table = type === 'team' ? 'registrations' : 'accommodation_requests';
+    triggerConfirm(
+      `Are you sure you want to request deletion of "${name}"? This request will be sent to the Super Admin.`,
+      async () => {
+        try {
+          const { error } = await supabase
+            .from(table)
+            .update({ delete_requested: true })
+            .eq('id', id);
+
+          if (error) throw error;
+          
+          if (type === 'team') {
+            setTeams(teams.map(t => t.id === id ? { ...t, delete_requested: true } : t));
+          } else {
+            setAccommodations(accommodations.map(a => a.id === id ? { ...a, delete_requested: true } : a));
+          }
+          showToast(`Deletion request for "${name}" submitted successfully.`, 'success');
+        } catch (error) {
+          console.error(error);
+          showToast('Failed to submit deletion request.', 'error');
+        }
+      },
+      'Request Delete Entry'
+    );
+  };
+
+  const handleCancelDeleteRequest = async (type, id, name) => {
+    const table = type === 'team' ? 'registrations' : 'accommodation_requests';
+    try {
+      const { error } = await supabase
+        .from(table)
+        .update({ delete_requested: false })
+        .eq('id', id);
+
+      if (error) throw error;
+      
+      if (type === 'team') {
+        setTeams(teams.map(t => t.id === id ? { ...t, delete_requested: false } : t));
+      } else {
+        setAccommodations(accommodations.map(a => a.id === id ? { ...a, delete_requested: false } : a));
+      }
+      showToast(`Cancelled deletion request for "${name}".`, 'success');
+    } catch (error) {
+      console.error(error);
+      showToast('Failed to cancel deletion request.', 'error');
+    }
+  };
+
+  const handleToggleRegistrationLive = async (newVal) => {
+    try {
+      const { data: row, error: fetchErr } = await supabase
+        .from('site_content')
+        .select('*')
+        .eq('id', 'active')
+        .single();
+      if (fetchErr) throw fetchErr;
+
+      const draft = row.draft_content || {};
+      const published = row.published_content || {};
+
+      draft.registration = { ...(draft.registration || {}), isLive: newVal };
+      published.registration = { ...(published.registration || {}), isLive: newVal };
+
+      const { error: updateErr } = await supabase
+        .from('site_content')
+        .update({
+          draft_content: draft,
+          published_content: published,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', 'active');
+      if (updateErr) throw updateErr;
+
+      setSiteContent(published);
+      showToast(`Registration form is now ${newVal ? 'OPEN' : 'CLOSED'}`, 'success');
+    } catch (err) {
+      console.error(err);
+      showToast(`Failed to update status: ${err.message}`, 'error');
+    }
+  };
+
+  const handleToggleAccommodationLive = async (newVal) => {
+    try {
+      const { data: row, error: fetchErr } = await supabase
+        .from('site_content')
+        .select('*')
+        .eq('id', 'active')
+        .single();
+      if (fetchErr) throw fetchErr;
+
+      const draft = row.draft_content || {};
+      const published = row.published_content || {};
+
+      draft.registration = { ...(draft.registration || {}), isAccommodationLive: newVal };
+      published.registration = { ...(published.registration || {}), isAccommodationLive: newVal };
+
+      const { error: updateErr } = await supabase
+        .from('site_content')
+        .update({
+          draft_content: draft,
+          published_content: published,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', 'active');
+      if (updateErr) throw updateErr;
+
+      setSiteContent(published);
+      showToast(`Accommodation form is now ${newVal ? 'OPEN' : 'CLOSED'}`, 'success');
+    } catch (err) {
+      console.error(err);
+      showToast(`Failed to update status: ${err.message}`, 'error');
+    }
+  };
+
+  const handleToggleBothLive = async (newVal) => {
+    try {
+      const { data: row, error: fetchErr } = await supabase
+        .from('site_content')
+        .select('*')
+        .eq('id', 'active')
+        .single();
+      if (fetchErr) throw fetchErr;
+
+      const draft = row.draft_content || {};
+      const published = row.published_content || {};
+
+      draft.registration = { 
+        ...(draft.registration || {}), 
+        isLive: newVal,
+        isAccommodationLive: newVal 
+      };
+      published.registration = { 
+        ...(published.registration || {}), 
+        isLive: newVal,
+        isAccommodationLive: newVal 
+      };
+
+      const { error: updateErr } = await supabase
+        .from('site_content')
+        .update({
+          draft_content: draft,
+          published_content: published,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', 'active');
+      if (updateErr) throw updateErr;
+
+      setSiteContent(published);
+      showToast(`All portals are now ${newVal ? 'OPEN' : 'CLOSED'}`, 'success');
+    } catch (err) {
+      console.error(err);
+      showToast(`Failed to update status: ${err.message}`, 'error');
+    }
   };
 
   const fetchPaymentScreenshot = async (collegeName, sport) => {
@@ -945,22 +1120,29 @@ export default function AdminDashboard() {
                               {(team.players?.length || 0) + 1} players
                             </td>
                             <td className="px-6 py-4">
-                              {isApproved ? (
-                                <span className="px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1.5 w-fit">
-                                  <Check className="w-3.5 h-3.5" /> Approved
-                                </span>
-                              ) : isRejected ? (
-                                <span className="px-3 py-1 rounded-full text-xs font-semibold bg-red-500/10 text-red-400 border border-red-500/20 flex items-center gap-1.5 w-fit">
-                                  <XCircle className="w-3.5 h-3.5" /> Rejected
-                                </span>
-                              ) : (
-                                <span className="px-3 py-1 rounded-full text-xs font-semibold bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 flex items-center gap-1.5 w-fit">
-                                  <Activity className="w-3.5 h-3.5 animate-pulse" /> Pending
-                                </span>
-                              )}
+                              <div className="flex flex-col gap-1.5 w-fit">
+                                {isApproved ? (
+                                  <span className="px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1.5 w-fit">
+                                    <Check className="w-3.5 h-3.5" /> Approved
+                                  </span>
+                                ) : isRejected ? (
+                                  <span className="px-3 py-1 rounded-full text-xs font-semibold bg-red-500/10 text-red-400 border border-red-500/20 flex items-center gap-1.5 w-fit">
+                                    <XCircle className="w-3.5 h-3.5" /> Rejected
+                                  </span>
+                                ) : (
+                                  <span className="px-3 py-1 rounded-full text-xs font-semibold bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 flex items-center gap-1.5 w-fit">
+                                    <Activity className="w-3.5 h-3.5 animate-pulse" /> Pending
+                                  </span>
+                                )}
+                                {team.delete_requested && (
+                                  <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20 animate-pulse flex items-center gap-1 w-fit">
+                                    ⚠️ Delete Requested
+                                  </span>
+                                )}
+                              </div>
                             </td>
                             <td className="px-6 py-4">
-                              {isApproved ? (
+                              {team.payment_method ? (
                                 <div className="text-xs font-semibold">
                                   {team.payment_method === 'Mixed' ? (
                                     <div className="space-y-0.5">
@@ -1022,16 +1204,59 @@ export default function AdminDashboard() {
                                       <X className="w-3.5 h-3.5" />
                                     </motion.button>
                                   )}
-                                  {adminRecord?.role === 'super_admin' && (
-                                    <motion.button
-                                      whileHover={{ scale: 1.1 }}
-                                      whileTap={{ scale: 0.9 }}
-                                      onClick={() => handleDeleteTeam(team.id, team.team_name)}
-                                      className="p-1.5 bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/30 rounded-lg"
-                                      title="Delete Entry"
-                                    >
-                                      <Trash2 className="w-3.5 h-3.5" />
-                                    </motion.button>
+                                  {adminRecord?.role === 'super_admin' ? (
+                                    <div className="flex items-center gap-1">
+                                      <motion.button
+                                        whileHover={{ scale: 1.1 }}
+                                        whileTap={{ scale: 0.9 }}
+                                        onClick={() => handleDeleteTeam(team.id, team.team_name)}
+                                        className={`p-1.5 rounded-lg border transition-all ${
+                                          team.delete_requested
+                                            ? 'bg-red-600 text-white border-red-500 animate-pulse hover:bg-red-700'
+                                            : 'bg-red-500/10 text-red-400 border-red-500/20 hover:bg-red-500/30'
+                                        }`}
+                                        title={team.delete_requested ? "Approve Delete Request" : "Delete Entry"}
+                                      >
+                                        <Trash2 className="w-3.5 h-3.5" />
+                                      </motion.button>
+                                      {team.delete_requested && (
+                                        <motion.button
+                                          whileHover={{ scale: 1.1 }}
+                                          whileTap={{ scale: 0.9 }}
+                                          onClick={() => handleCancelDeleteRequest('team', team.id, team.team_name)}
+                                          className="p-1.5 bg-gray-500/10 text-gray-400 border border-gray-500/20 hover:bg-gray-500/30 rounded-lg"
+                                          title="Reject Delete Request"
+                                        >
+                                          <X className="w-3.5 h-3.5" />
+                                        </motion.button>
+                                      )}
+                                    </div>
+                                  ) : (
+                                    <div className="flex items-center gap-1">
+                                      {team.delete_requested ? (
+                                        <div className="flex items-center gap-1">
+                                          <motion.button
+                                            whileHover={{ scale: 1.05 }}
+                                            whileTap={{ scale: 0.95 }}
+                                            onClick={() => handleCancelDeleteRequest('team', team.id, team.team_name)}
+                                            className="px-2 py-1 bg-white/[0.02] border border-white/[0.06] hover:bg-white/[0.05] rounded-lg text-[10px] text-gray-400 font-bold"
+                                            title="Cancel Deletion Request"
+                                          >
+                                            Cancel
+                                          </motion.button>
+                                        </div>
+                                      ) : (
+                                        <motion.button
+                                          whileHover={{ scale: 1.05 }}
+                                          whileTap={{ scale: 0.95 }}
+                                          onClick={() => handleRequestDelete('team', team.id, team.team_name)}
+                                          className="px-2.5 py-1 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 text-rose-400 rounded-lg text-xs font-bold transition-all"
+                                          title="Request Super Admin to Delete"
+                                        >
+                                          Req Delete
+                                        </motion.button>
+                                      )}
+                                    </div>
                                   )}
                                 </div>
                               </div>
@@ -1106,7 +1331,7 @@ export default function AdminDashboard() {
                           <p className="text-[11px] font-mono font-bold text-purple-300">{team.captain_mobile || '—'}</p>
                         </div>
 
-                        {isApproved && (
+                        {team.payment_method && (
                           <div className="bg-white/[0.02] rounded-xl p-2.5 border border-white/[0.03] col-span-2">
                             <p className="text-[8px] text-gray-600 uppercase tracking-wider font-bold mb-0.5">Payment Details</p>
                             <div className="text-[11px] font-semibold text-gray-300">
@@ -1163,14 +1388,43 @@ export default function AdminDashboard() {
                               <X className="w-4 h-4" />
                             </button>
                           )}
-                          {adminRecord?.role === 'super_admin' && (
-                            <button
-                              onClick={() => handleDeleteTeam(team.id, team.team_name)}
-                              className="w-10 h-10 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 rounded-xl text-red-400 flex items-center justify-center"
-                              title="Delete Record"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
+                          {adminRecord?.role === 'super_admin' ? (
+                            <div className="flex gap-1.5">
+                              <button
+                                onClick={() => handleDeleteTeam(team.id, team.team_name)}
+                                className="w-10 h-10 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 rounded-xl text-red-400 flex items-center justify-center"
+                                title={team.delete_requested ? "Approve Delete" : "Delete Record"}
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                              {team.delete_requested && (
+                                <button
+                                  onClick={() => handleCancelDeleteRequest('team', team.id, team.team_name)}
+                                  className="w-10 h-10 bg-white/[0.04] border border-white/[0.06] hover:bg-white/[0.08] rounded-xl text-gray-400 flex items-center justify-center"
+                                  title="Reject Delete Request"
+                                >
+                                  <X className="w-4 h-4" />
+                                </button>
+                              )}
+                            </div>
+                          ) : (
+                            <div>
+                              {team.delete_requested ? (
+                                <button
+                                  onClick={() => handleCancelDeleteRequest('team', team.id, team.team_name)}
+                                  className="px-3 py-2 bg-white/[0.04] border border-white/[0.06] hover:bg-white/[0.08] rounded-xl text-xs text-gray-300 font-bold"
+                                >
+                                  Cancel Delete Req
+                                </button>
+                              ) : (
+                                <button
+                                  onClick={() => handleRequestDelete('team', team.id, team.team_name)}
+                                  className="px-3 py-2 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 text-rose-400 text-xs font-bold rounded-xl"
+                                >
+                                  Req Delete
+                                </button>
+                              )}
+                            </div>
                           )}
                         </div>
                       </div>
@@ -1300,7 +1554,7 @@ export default function AdminDashboard() {
                               ₹{row.total_amount}
                             </td>
                             <td className="px-6 py-4 text-xs font-semibold">
-                              {isApproved ? (
+                              {row.payment_method ? (
                                 <div>
                                   {row.payment_method === 'Mixed' ? (
                                     <div className="space-y-0.5">
@@ -1334,19 +1588,26 @@ export default function AdminDashboard() {
                               </div>
                             </td>
                             <td className="px-6 py-4">
-                              {isApproved ? (
-                                <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1 w-fit">
-                                  <Check className="w-3 h-3" /> Approved
-                                </span>
-                              ) : isRejected ? (
-                                <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-500/10 text-red-400 border border-red-500/20 flex items-center gap-1 w-fit">
-                                  <XCircle className="w-3 h-3" /> Rejected
-                                </span>
-                              ) : (
-                                <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 flex items-center gap-1 w-fit">
-                                  <Activity className="w-3 h-3 animate-pulse" /> Pending
-                                </span>
-                              )}
+                              <div className="flex flex-col gap-1.5 w-fit">
+                                {isApproved ? (
+                                  <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1 w-fit">
+                                    <Check className="w-3 h-3" /> Approved
+                                  </span>
+                                ) : isRejected ? (
+                                  <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-500/10 text-red-400 border border-red-500/20 flex items-center gap-1 w-fit">
+                                    <XCircle className="w-3 h-3" /> Rejected
+                                  </span>
+                                ) : (
+                                  <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 flex items-center gap-1 w-fit">
+                                    <Activity className="w-3 h-3 animate-pulse" /> Pending
+                                  </span>
+                                )}
+                                {row.delete_requested && (
+                                  <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20 animate-pulse flex items-center gap-1 w-fit">
+                                    ⚠️ Delete Requested
+                                  </span>
+                                )}
+                              </div>
                             </td>
                             <td className="px-6 py-4">
                               <div className="flex items-center justify-center gap-2">
@@ -1365,22 +1626,63 @@ export default function AdminDashboard() {
                                     whileHover={{ scale: 1.02 }}
                                     whileTap={{ scale: 0.98 }}
                                     onClick={() => handleUpdateAccStatus(row.id, 'rejected')}
-                                    className="px-3 py-1.5 bg-red-650/10 hover:bg-red-650/20 border border-red-500/20 text-red-400 rounded-lg text-xs font-bold transition-all"
+                                    className="px-3 py-1.5 bg-red-600/10 hover:bg-red-600/20 border border-red-500/20 text-red-400 rounded-lg text-xs font-bold transition-all"
                                   >
                                     Reject
                                   </motion.button>
                                 )}
-                                {adminRecord?.role === 'super_admin' && (
-                                  <motion.button
-                                    whileHover={{ scale: 1.1 }}
-                                    whileTap={{ scale: 0.9 }}
-                                    onClick={() => handleDeleteAccommodation(row.id, row.team_name)}
-                                    className="p-1.5 bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/30 rounded-lg"
-                                    title="Delete Accommodation Booking"
-                                  >
-                                    <Trash2 className="w-3.5 h-3.5" />
-                                  </motion.button>
-                                )}
+                                {adminRecord?.role === 'super_admin' ? (
+                                    <div className="flex items-center gap-1">
+                                      <motion.button
+                                        whileHover={{ scale: 1.1 }}
+                                        whileTap={{ scale: 0.9 }}
+                                        onClick={() => handleDeleteAccommodation(row.id, row.team_name)}
+                                        className={`p-1.5 rounded-lg border transition-all ${
+                                          row.delete_requested
+                                            ? 'bg-red-600 text-white border-red-500 animate-pulse hover:bg-red-700'
+                                            : 'bg-red-500/10 text-red-400 border-red-500/20 hover:bg-red-500/30'
+                                        }`}
+                                        title={row.delete_requested ? "Approve Delete Request" : "Delete Accommodation Booking"}
+                                      >
+                                        <Trash2 className="w-3.5 h-3.5" />
+                                      </motion.button>
+                                      {row.delete_requested && (
+                                        <motion.button
+                                          whileHover={{ scale: 1.1 }}
+                                          whileTap={{ scale: 0.9 }}
+                                          onClick={() => handleCancelDeleteRequest('accommodation', row.id, row.team_name)}
+                                          className="p-1.5 bg-gray-500/10 text-gray-400 border border-gray-500/20 hover:bg-gray-500/30 rounded-lg"
+                                          title="Reject Delete Request"
+                                        >
+                                          <X className="w-3.5 h-3.5" />
+                                        </motion.button>
+                                      )}
+                                    </div>
+                                  ) : (
+                                    <div className="flex items-center gap-1">
+                                      {row.delete_requested ? (
+                                        <motion.button
+                                          whileHover={{ scale: 1.05 }}
+                                          whileTap={{ scale: 0.95 }}
+                                          onClick={() => handleCancelDeleteRequest('accommodation', row.id, row.team_name)}
+                                          className="px-2 py-1 bg-white/[0.02] border border-white/[0.06] hover:bg-white/[0.05] rounded-lg text-[10px] text-gray-400 font-bold"
+                                          title="Cancel Deletion Request"
+                                        >
+                                          Cancel
+                                        </motion.button>
+                                      ) : (
+                                        <motion.button
+                                          whileHover={{ scale: 1.05 }}
+                                          whileTap={{ scale: 0.95 }}
+                                          onClick={() => handleRequestDelete('accommodation', row.id, row.team_name)}
+                                          className="px-2.5 py-1 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 text-rose-400 rounded-lg text-xs font-bold transition-all"
+                                          title="Request Super Admin to Delete"
+                                        >
+                                          Req Delete
+                                        </motion.button>
+                                      )}
+                                    </div>
+                                  )}
                               </div>
                             </td>
                           </motion.tr>
@@ -1462,7 +1764,7 @@ export default function AdminDashboard() {
                           <p className="text-[11px] font-mono font-bold text-emerald-400">₹{row.total_amount}</p>
                         </div>
 
-                        {isApproved && (
+                        {row.payment_method && (
                           <div className="bg-white/[0.02] rounded-xl p-2.5 border border-white/[0.03] col-span-2">
                             <p className="text-[8px] text-gray-600 uppercase tracking-wider font-bold mb-0.5">Payment Breakup</p>
                             <div className="text-[11px] font-semibold text-gray-300">
@@ -1513,19 +1815,48 @@ export default function AdminDashboard() {
                           {!isRejected && (
                             <button
                               onClick={() => handleUpdateAccStatus(row.id, 'rejected')}
-                              className="px-3 py-2 bg-red-650/10 hover:bg-red-650/20 border border-red-500/20 text-red-400 rounded-xl text-xs font-bold transition-all min-h-[40px] flex items-center justify-center"
+                              className="px-3 py-2 bg-red-600/10 hover:bg-red-600/20 border border-red-500/20 text-red-400 rounded-xl text-xs font-bold transition-all min-h-[40px] flex items-center justify-center"
                             >
                               Reject
                             </button>
                           )}
-                          {adminRecord?.role === 'super_admin' && (
-                            <button
-                              onClick={() => handleDeleteAccommodation(row.id, row.team_name)}
-                              className="w-10 h-10 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 rounded-xl text-red-400 flex items-center justify-center"
-                              title="Delete Record"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
+                          {adminRecord?.role === 'super_admin' ? (
+                            <div className="flex gap-1.5">
+                              <button
+                                onClick={() => handleDeleteAccommodation(row.id, row.team_name)}
+                                className="w-10 h-10 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 rounded-xl text-red-400 flex items-center justify-center"
+                                title={row.delete_requested ? "Approve Delete" : "Delete Record"}
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                              {row.delete_requested && (
+                                <button
+                                  onClick={() => handleCancelDeleteRequest('accommodation', row.id, row.team_name)}
+                                  className="w-10 h-10 bg-white/[0.04] border border-white/[0.06] hover:bg-white/[0.08] rounded-xl text-gray-400 flex items-center justify-center"
+                                  title="Reject Delete Request"
+                                >
+                                  <X className="w-4 h-4" />
+                                </button>
+                              )}
+                            </div>
+                          ) : (
+                            <div>
+                              {row.delete_requested ? (
+                                <button
+                                  onClick={() => handleCancelDeleteRequest('accommodation', row.id, row.team_name)}
+                                  className="px-3 py-2 bg-white/[0.04] border border-white/[0.06] hover:bg-white/[0.08] rounded-xl text-xs text-gray-300 font-bold"
+                                >
+                                  Cancel Delete Req
+                                </button>
+                              ) : (
+                                <button
+                                  onClick={() => handleRequestDelete('accommodation', row.id, row.team_name)}
+                                  className="px-3 py-2 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 text-rose-400 text-xs font-bold rounded-xl"
+                                >
+                                  Req Delete
+                                </button>
+                              )}
+                            </div>
                           )}
                         </div>
                       </div>
@@ -1550,6 +1881,122 @@ export default function AdminDashboard() {
               animate={{ opacity: 1, y: 0 }}
               className="space-y-6"
             >
+              {/* Portal System Controls Card */}
+              <div className="bg-gradient-to-b from-[#110825] to-[#0c041c] border border-purple-500/10 rounded-3xl p-6 md:p-8 relative overflow-hidden shadow-2xl">
+                <div className="absolute top-0 right-0 w-[300px] h-[150px] bg-gradient-to-br from-purple-500/10 to-blue-500/10 blur-2xl rounded-full pointer-events-none" />
+                
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+                  <div>
+                    <h3 className="text-lg font-black text-white flex items-center gap-2 tracking-wide uppercase">
+                      <SlidersHorizontal className="w-5 h-5 text-purple-400" /> Portal Controls
+                    </h3>
+                    <p className="text-gray-400 text-xs mt-1">Manage registration and accommodation availability states dynamically</p>
+                  </div>
+                  
+                  {/* Master Switch inside controls header */}
+                  {siteContent && (
+                    <div className="flex items-center gap-3 bg-purple-950/20 border border-purple-500/20 px-4 py-2 rounded-2xl">
+                      <span className="text-xs font-bold text-purple-300">Master Switch</span>
+                      <button
+                        onClick={() => {
+                          const bothLive = (siteContent.registration?.isLive !== false) && (siteContent.registration?.isAccommodationLive !== false);
+                          handleToggleBothLive(!bothLive);
+                        }}
+                        className={`w-12 h-6 rounded-full transition-all relative duration-300 focus:outline-none flex items-center p-0.5 cursor-pointer ${
+                          ((siteContent.registration?.isLive !== false) && (siteContent.registration?.isAccommodationLive !== false))
+                            ? "bg-purple-600 shadow-[0_0_10px_rgba(147,51,234,0.4)]"
+                            : "bg-white/[0.06] border border-white/[0.08]"
+                        }`}
+                      >
+                        <div
+                          className={`w-5 h-5 rounded-full shadow-md transform transition-transform duration-300 ${
+                            ((siteContent.registration?.isLive !== false) && (siteContent.registration?.isAccommodationLive !== false))
+                              ? "translate-x-6 bg-white"
+                              : "translate-x-0 bg-gray-400"
+                          }`}
+                        />
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {siteContent ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    {/* Registrations Toggle Card */}
+                    <div className="bg-white/[0.02] border border-white/[0.04] p-5 rounded-2xl flex items-center justify-between gap-4 hover:border-purple-500/20 transition-all group">
+                      <div className="space-y-1">
+                        <h4 className="text-sm font-bold text-white flex items-center gap-2">
+                          <Trophy className="w-4 h-4 text-purple-400" /> Registrations Portal
+                        </h4>
+                        <p className="text-gray-500 text-xs leading-relaxed max-w-sm">Allow or restrict teams from completing registration forms.</p>
+                      </div>
+                      <div className="flex flex-col items-end gap-2 flex-shrink-0">
+                        <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded ${
+                          (siteContent.registration?.isLive !== false)
+                            ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                            : 'bg-red-500/10 text-red-400 border border-red-500/20'
+                        }`}>
+                          {(siteContent.registration?.isLive !== false) ? 'Live' : 'Closed'}
+                        </span>
+                        <button
+                          onClick={() => handleToggleRegistrationLive(siteContent.registration?.isLive === false)}
+                          className={`w-12 h-6 rounded-full transition-all relative duration-300 focus:outline-none flex items-center p-0.5 cursor-pointer ${
+                            (siteContent.registration?.isLive !== false)
+                              ? "bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.4)]"
+                              : "bg-white/[0.06] border border-white/[0.08]"
+                          }`}
+                        >
+                          <div
+                            className={`w-5 h-5 rounded-full shadow-md transform transition-transform duration-300 ${
+                              (siteContent.registration?.isLive !== false)
+                                ? "translate-x-6 bg-white"
+                                : "translate-x-0 bg-gray-400"
+                            }`}
+                          />
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Accommodation Toggle Card */}
+                    <div className="bg-white/[0.02] border border-white/[0.04] p-5 rounded-2xl flex items-center justify-between gap-4 hover:border-purple-500/20 transition-all group">
+                      <div className="space-y-1">
+                        <h4 className="text-sm font-bold text-white flex items-center gap-2">
+                          <Home className="w-4 h-4 text-blue-400" /> Accommodation Portal
+                        </h4>
+                        <p className="text-gray-500 text-xs leading-relaxed max-w-sm">Allow or restrict bookings for food and hostel check-in forms.</p>
+                      </div>
+                      <div className="flex flex-col items-end gap-2 flex-shrink-0">
+                        <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded ${
+                          (siteContent.registration?.isAccommodationLive !== false)
+                            ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                            : 'bg-red-500/10 text-red-400 border border-red-500/20'
+                        }`}>
+                          {(siteContent.registration?.isAccommodationLive !== false) ? 'Live' : 'Closed'}
+                        </span>
+                        <button
+                          onClick={() => handleToggleAccommodationLive(siteContent.registration?.isAccommodationLive === false)}
+                          className={`w-12 h-6 rounded-full transition-all relative duration-300 focus:outline-none flex items-center p-0.5 cursor-pointer ${
+                            (siteContent.registration?.isAccommodationLive !== false)
+                              ? "bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.4)]"
+                              : "bg-white/[0.06] border border-white/[0.08]"
+                          }`}
+                        >
+                          <div
+                            className={`w-5 h-5 rounded-full shadow-md transform transition-transform duration-300 ${
+                              (siteContent.registration?.isAccommodationLive !== false)
+                                ? "translate-x-6 bg-white"
+                                : "translate-x-0 bg-gray-400"
+                            }`}
+                          />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-xs text-gray-500 py-4">Loading active controls status...</div>
+                )}
+              </div>
+
               <div className="bg-white/[0.01] border border-white/[0.05] rounded-3xl p-6 md:p-8 relative overflow-hidden">
                 <h2 className="text-xl font-bold text-white mb-2">Content Manager Studio</h2>
                 <p className="text-gray-400 mb-6 text-sm">Fine-tune critical front-end components like registration QR codes, whatsapp groups, dates, galleries, and coordinators.</p>
@@ -1964,17 +2411,46 @@ export default function AdminDashboard() {
               </div>
 
               <div className="space-y-3.5 max-h-96 overflow-y-auto pr-1">
-                {selectedPlayersModal.players.map((player, index) => (
-                  <div key={index} className="flex items-center gap-3 p-3 bg-white/[0.02] border border-white/[0.04] rounded-xl">
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500/20 to-blue-500/20 flex items-center justify-center border border-purple-500/10">
-                      <User className="w-4 h-4 text-purple-400" />
+                {selectedPlayersModal.players.map((playerStr, index) => {
+                  const { name, status, sports } = parsePlayerString(playerStr);
+                  return (
+                    <div key={index} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-white/[0.02] border border-white/[0.04] rounded-xl hover:bg-white/[0.04] transition-all">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500/20 to-blue-500/20 flex items-center justify-center border border-purple-500/10">
+                          <User className="w-4 h-4 text-purple-400" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-white">{name}</p>
+                          <p className="text-[10px] text-gray-500">Participant #{index + 1}</p>
+                          {status === 'Already Paid' && sports && (
+                            <p className="text-[10px] text-purple-400 font-semibold mt-0.5">
+                              🎒 Registered in: {sports}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-end">
+                        {status === 'Already Paid' ? (
+                          <span className="px-2 py-0.5 rounded-md text-[9px] font-black bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                            ✓ Already Paid
+                          </span>
+                        ) : status === 'Cash' ? (
+                          <span className="px-2 py-0.5 rounded-md text-[9px] font-black bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                            💵 Cash
+                          </span>
+                        ) : status === 'UPI' ? (
+                          <span className="px-2 py-0.5 rounded-md text-[9px] font-black bg-purple-500/20 text-purple-400 border border-purple-500/30">
+                            📱 UPI
+                          </span>
+                        ) : status ? (
+                          <span className="px-2 py-0.5 rounded-md text-[9px] font-black bg-blue-500/20 text-blue-400 border border-blue-500/30">
+                            {status}
+                          </span>
+                        ) : null}
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-sm font-semibold text-white">{player}</p>
-                      <p className="text-[10px] text-gray-500">Participant #{index + 1}</p>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </motion.div>
           </motion.div>

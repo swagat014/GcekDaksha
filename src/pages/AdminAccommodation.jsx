@@ -8,6 +8,24 @@ import {
   ExternalLink, Search, Trash2, Landmark, CheckCircle2, Activity
 } from 'lucide-react';
 
+const parsePlayerString = (playerStr) => {
+  if (!playerStr) return { name: '', status: '', sports: '' };
+  const match = playerStr.match(/^([^(]+)\(([^)]+)\)$/);
+  if (!match) {
+    return { name: playerStr.trim(), status: '', sports: '' };
+  }
+  const name = match[1].trim();
+  const rawDetails = match[2].trim();
+  
+  if (rawDetails.startsWith('Already Paid')) {
+    const parts = rawDetails.split('-');
+    const sports = parts[1] ? parts[1].trim() : '';
+    return { name, status: 'Already Paid', sports };
+  }
+  
+  return { name, status: rawDetails, sports: '' };
+};
+
 export default function AdminAccommodation() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [data, setData] = useState([]);
@@ -131,9 +149,9 @@ export default function AdminAccommodation() {
       id: item.id,
       name: item.team_name,
       totalAmount: total,
-      paymentMethod: 'UPI',
-      cashAmount: 0,
-      upiAmount: total
+      paymentMethod: item.payment_method || 'UPI',
+      cashAmount: item.cash_amount || 0,
+      upiAmount: (item.upi_amount !== null && item.upi_amount !== undefined) ? item.upi_amount : total
     });
   };
 
@@ -190,6 +208,46 @@ export default function AdminAccommodation() {
       },
       'Delete Accommodation'
     );
+  };
+
+  const handleRequestDelete = async (id, name) => {
+    triggerConfirm(
+      `Are you sure you want to request deletion of "${name}"? This request will be sent to the Super Admin.`,
+      async () => {
+        try {
+          const { error } = await supabase
+            .from('accommodation_requests')
+            .update({ delete_requested: true })
+            .eq('id', id);
+
+          if (error) throw error;
+          
+          setData(data.map(a => a.id === id ? { ...a, delete_requested: true } : a));
+          showToast(`Deletion request for "${name}" submitted successfully.`, 'success');
+        } catch (error) {
+          console.error(error);
+          showToast('Failed to submit deletion request.', 'error');
+        }
+      },
+      'Request Delete Entry'
+    );
+  };
+
+  const handleCancelDeleteRequest = async (id, name) => {
+    try {
+      const { error } = await supabase
+        .from('accommodation_requests')
+        .update({ delete_requested: false })
+        .eq('id', id);
+
+      if (error) throw error;
+      
+      setData(data.map(a => a.id === id ? { ...a, delete_requested: false } : a));
+      showToast(`Cancelled deletion request for "${name}".`, 'success');
+    } catch (error) {
+      console.error(error);
+      showToast('Failed to cancel deletion request.', 'error');
+    }
   };
 
   const handleLogout = async () => {
@@ -430,6 +488,7 @@ export default function AdminAccommodation() {
                     <th className="px-6 py-4.5">Sport</th>
                     <th className="px-6 py-4.5">Roster Count</th>
                     <th className="px-6 py-4.5">Sum Charge</th>
+                    <th className="px-6 py-4.5">Payment Breakup</th>
                     <th className="px-6 py-4.5">UTR / Bill</th>
                     <th className="px-6 py-4.5">Screenshot</th>
                     <th className="px-6 py-4.5">Status</th>
@@ -471,6 +530,24 @@ export default function AdminAccommodation() {
                         <td className="px-6 py-4 text-sm text-emerald-400 font-bold font-mono">
                           ₹{row.total_amount}
                         </td>
+                        <td className="px-6 py-4 text-xs font-semibold">
+                          {row.payment_method ? (
+                            <div>
+                              {row.payment_method === 'Mixed' ? (
+                                <div className="space-y-0.5">
+                                  <p className="text-purple-300">Mixed: UPI + Cash</p>
+                                  <p className="text-[10px] text-gray-500 font-mono">UPI: ₹{row.upi_amount} | Cash: ₹{row.cash_amount}</p>
+                                </div>
+                              ) : row.payment_method === 'Cash' ? (
+                                <p className="text-emerald-400">💵 Fully Cash (₹{row.total_amount})</p>
+                              ) : (
+                                <p className="text-purple-400">📱 Fully UPI (₹{row.total_amount})</p>
+                              )}
+                            </div>
+                          ) : (
+                            <span className="text-xs text-gray-600">—</span>
+                          )}
+                        </td>
                         <td className="px-6 py-4 text-xs text-gray-300 font-mono">
                           <div className="flex items-center gap-1.5">
                             <CreditCard className="w-3.5 h-3.5 text-gray-500" />
@@ -493,19 +570,26 @@ export default function AdminAccommodation() {
                           )}
                         </td>
                         <td className="px-6 py-4">
-                          {row.status === 'approved' ? (
-                            <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1 w-fit">
-                              <Check className="w-3 h-3" /> Approved
-                            </span>
-                          ) : row.status === 'rejected' ? (
-                            <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-500/10 text-red-400 border border-red-500/20 flex items-center gap-1 w-fit">
-                              <XCircle className="w-3 h-3" /> Rejected
-                            </span>
-                          ) : (
-                            <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 flex items-center gap-1 w-fit">
-                              <Activity className="w-3 h-3 animate-pulse" /> Pending
-                            </span>
-                          )}
+                          <div className="flex flex-col gap-1 w-fit">
+                            {row.status === 'approved' ? (
+                              <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1 w-fit">
+                                <Check className="w-3 h-3" /> Approved
+                              </span>
+                            ) : row.status === 'rejected' ? (
+                              <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-500/10 text-red-400 border border-red-500/20 flex items-center gap-1 w-fit">
+                                <XCircle className="w-3.5 h-3.5" /> Rejected
+                              </span>
+                            ) : (
+                              <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 flex items-center gap-1 w-fit">
+                                <Activity className="w-3.5 h-3.5 animate-pulse" /> Pending
+                              </span>
+                            )}
+                            {row.delete_requested && (
+                              <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20 animate-pulse flex items-center gap-1 w-fit">
+                                ⚠️ Delete Requested
+                              </span>
+                            )}
+                          </div>
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex items-center justify-center gap-2">
@@ -529,16 +613,57 @@ export default function AdminAccommodation() {
                                 Reject
                               </motion.button>
                             )}
-                            {adminRecord?.role === 'super_admin' && (
-                              <motion.button
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
-                                onClick={() => handleDeleteAccommodation(row.id, row.team_name)}
-                                className="p-1.5 bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/30 rounded-lg"
-                                title="Delete Accommodation Booking"
-                              >
-                                <Trash2 className="w-3.5 h-3.5" />
-                              </motion.button>
+                            {adminRecord?.role === 'super_admin' ? (
+                              <div className="flex items-center gap-1">
+                                <motion.button
+                                  whileHover={{ scale: 1.05 }}
+                                  whileTap={{ scale: 0.95 }}
+                                  onClick={() => handleDeleteAccommodation(row.id, row.team_name)}
+                                  className={`p-1.5 rounded-lg border transition-all ${
+                                    row.delete_requested
+                                      ? 'bg-red-600 text-white border-red-500 animate-pulse hover:bg-red-700'
+                                      : 'bg-red-500/10 text-red-400 border-red-500/20 hover:bg-red-500/30'
+                                  }`}
+                                  title={row.delete_requested ? "Approve Delete Request" : "Delete Accommodation Booking"}
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </motion.button>
+                                {row.delete_requested && (
+                                  <motion.button
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
+                                    onClick={() => handleCancelDeleteRequest(row.id, row.team_name)}
+                                    className="p-1.5 bg-gray-500/10 text-gray-400 border border-gray-500/20 hover:bg-gray-500/30 rounded-lg"
+                                    title="Reject Delete Request"
+                                  >
+                                    <X className="w-3.5 h-3.5" />
+                                  </motion.button>
+                                )}
+                              </div>
+                            ) : (
+                              <div className="flex items-center gap-1">
+                                {row.delete_requested ? (
+                                  <motion.button
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
+                                    onClick={() => handleCancelDeleteRequest(row.id, row.team_name)}
+                                    className="px-2 py-1 bg-white/[0.02] border border-white/[0.06] hover:bg-white/[0.05] rounded-lg text-[10px] text-gray-400 font-bold"
+                                    title="Cancel Deletion Request"
+                                  >
+                                    Cancel
+                                  </motion.button>
+                                ) : (
+                                  <motion.button
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
+                                    onClick={() => handleRequestDelete(row.id, row.team_name)}
+                                    className="px-2.5 py-1 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 text-rose-400 rounded-lg text-xs font-bold transition-all"
+                                    title="Request Super Admin to Delete"
+                                  >
+                                    Req Delete
+                                  </motion.button>
+                                )}
+                              </div>
                             )}
                           </div>
                         </td>
@@ -586,17 +711,46 @@ export default function AdminAccommodation() {
               </div>
 
               <div className="space-y-3.5 max-h-96 overflow-y-auto pr-1">
-                {selectedPlayersModal.players.map((player, index) => (
-                  <div key={index} className="flex items-center gap-3 p-3 bg-white/[0.02] border border-white/[0.04] rounded-xl">
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500/20 to-blue-500/20 flex items-center justify-center border border-purple-500/10">
-                      <User className="w-4 h-4 text-purple-400" />
+                {selectedPlayersModal.players.map((playerStr, index) => {
+                  const { name, status, sports } = parsePlayerString(playerStr);
+                  return (
+                    <div key={index} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-white/[0.02] border border-white/[0.04] rounded-xl hover:bg-white/[0.04] transition-all">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500/20 to-blue-500/20 flex items-center justify-center border border-purple-500/10">
+                          <User className="w-4 h-4 text-purple-400" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-white">{name}</p>
+                          <p className="text-[10px] text-gray-500">Participant #{index + 1}</p>
+                          {status === 'Already Paid' && sports && (
+                            <p className="text-[10px] text-purple-400 font-semibold mt-0.5">
+                              🎒 Registered in: {sports}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-end">
+                        {status === 'Already Paid' ? (
+                          <span className="px-2 py-0.5 rounded-md text-[9px] font-black bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                            ✓ Already Paid
+                          </span>
+                        ) : status === 'Cash' ? (
+                          <span className="px-2 py-0.5 rounded-md text-[9px] font-black bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                            💵 Cash
+                          </span>
+                        ) : status === 'UPI' ? (
+                          <span className="px-2 py-0.5 rounded-md text-[9px] font-black bg-purple-500/20 text-purple-400 border border-purple-500/30">
+                            📱 UPI
+                          </span>
+                        ) : status ? (
+                          <span className="px-2 py-0.5 rounded-md text-[9px] font-black bg-blue-500/20 text-blue-400 border border-blue-500/30">
+                            {status}
+                          </span>
+                        ) : null}
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-sm font-semibold text-white">{player}</p>
-                      <p className="text-[10px] text-gray-500">Participant #{index + 1}</p>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </motion.div>
           </motion.div>
